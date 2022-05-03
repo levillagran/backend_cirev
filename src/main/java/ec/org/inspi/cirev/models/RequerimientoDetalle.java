@@ -74,8 +74,8 @@ public class RequerimientoDetalle {
 	private String concentration;
 	@Column(name = "is_fasta")
 	private Boolean isFasta;
-	@Column(name = "quantity")
-	private Integer quantity;
+	@Column(name = "quality")
+	private Integer quality;
 	@Column(name = "identity")
 	private Integer identity;
 	@Column(name = "organism")

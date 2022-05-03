@@ -26,6 +26,8 @@ public class Requerimiento {
 	private Integer id;
 	@Column(name = "number")
 	private Integer number;
+	@Column(name = "code")
+	private String code;
 	@Column(name = "entry_date")
 	private Calendar entryDate;
 	@Column(name = "processing_date")

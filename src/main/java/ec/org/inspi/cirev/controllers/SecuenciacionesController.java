@@ -12,34 +12,39 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ec.org.inspi.cirev.payload.request.ProcesamientoRequest;
+import ec.org.inspi.cirev.payload.request.SecuenciacionRequest;
 import ec.org.inspi.cirev.payload.response.ProcesamientoResponseEditar;
 import ec.org.inspi.cirev.payload.response.RequerimientoResponseLista;
+import ec.org.inspi.cirev.payload.response.SecuenciacionResponseEditar;
 import ec.org.inspi.cirev.services.ProcesamientosService;
+import ec.org.inspi.cirev.services.SecuenciacionesService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/procesamientos")
-public class ProcesamientosController {
+@RequestMapping("/api/secuenciaciones")
+public class SecuenciacionesController {
 	@Autowired
-	private ProcesamientosService procesamientosService;
+	private SecuenciacionesService secuenciacionesService;
 		
 	@GetMapping(value = "/all")
 	public List<RequerimientoResponseLista> listAll() {
-		return procesamientosService.findAll();
+		return secuenciacionesService.findAll();
 	}
 	
 	@PostMapping(value = "/save")
-	public List<RequerimientoResponseLista> save(@RequestBody ProcesamientoRequest requerimiento) {
-		return procesamientosService.save(requerimiento);
+	public List<RequerimientoResponseLista> save(@RequestBody SecuenciacionRequest requerimiento) {
+		System.out.println(requerimiento);
+		return secuenciacionesService.save(requerimiento);
 	}
 	
-	@GetMapping(value = "/findById/{requerimientoId}")
-	public ProcesamientoResponseEditar findById(@PathVariable Integer requerimientoId) {
-		return procesamientosService.findById(requerimientoId);
+	@GetMapping(value = "/findById/{secuenciacionId}")
+	public SecuenciacionResponseEditar findById(@PathVariable Integer secuenciacionId) {
+		return secuenciacionesService.findById(secuenciacionId);
 	}
 	
 	@GetMapping(value = "/comprobanteCreate/{requerimientoId}")
 	public String createVoucher(@PathVariable Integer requerimientoId) {
-		return procesamientosService.createVoucher(requerimientoId);
+		return secuenciacionesService.createVoucher(requerimientoId);
 	}
+	
 }

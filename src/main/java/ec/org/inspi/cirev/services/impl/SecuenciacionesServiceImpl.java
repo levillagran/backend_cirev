@@ -1,6 +1,5 @@
 package ec.org.inspi.cirev.services.impl;
 
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,12 +34,20 @@ import ec.org.inspi.cirev.models.Taxonomia;
 import ec.org.inspi.cirev.models.Tecnica;
 import ec.org.inspi.cirev.models.TipoMuestra;
 import ec.org.inspi.cirev.models.UsuarioFirmante;
+import ec.org.inspi.cirev.payload.request.ProcesamientoDetallesRequest;
+import ec.org.inspi.cirev.payload.request.ProcesamientoRequest;
 import ec.org.inspi.cirev.payload.request.RequerimientoDetallesRequest;
 import ec.org.inspi.cirev.payload.request.RequerimientoRequest;
+import ec.org.inspi.cirev.payload.request.SecuenciacionDetallesRequest;
+import ec.org.inspi.cirev.payload.request.SecuenciacionRequest;
 import ec.org.inspi.cirev.payload.request.UploadRequest;
+import ec.org.inspi.cirev.payload.response.ProcesamientoDetallesResponseEditar;
+import ec.org.inspi.cirev.payload.response.ProcesamientoResponseEditar;
 import ec.org.inspi.cirev.payload.response.RequerimientoDetallesResponseEditar;
 import ec.org.inspi.cirev.payload.response.RequerimientoResponseEditar;
 import ec.org.inspi.cirev.payload.response.RequerimientoResponseLista;
+import ec.org.inspi.cirev.payload.response.SecuenciacionDetallesResponseEditar;
+import ec.org.inspi.cirev.payload.response.SecuenciacionResponseEditar;
 import ec.org.inspi.cirev.repositories.AlmacenamientoRepository;
 import ec.org.inspi.cirev.repositories.AnalisisRepository;
 import ec.org.inspi.cirev.repositories.CantonRepository;
@@ -58,7 +65,9 @@ import ec.org.inspi.cirev.repositories.TaxonomiaRepository;
 import ec.org.inspi.cirev.repositories.TecnicaRepository;
 import ec.org.inspi.cirev.repositories.TipoMuestraRepository;
 import ec.org.inspi.cirev.repositories.UsuarioFirmanteRepository;
+import ec.org.inspi.cirev.services.ProcesamientosService;
 import ec.org.inspi.cirev.services.RequerimientoService;
+import ec.org.inspi.cirev.services.SecuenciacionesService;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
@@ -73,8 +82,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
-@Service("requerimientoService")
-public class RequerimientoServiceImpl implements RequerimientoService {
+@Service("secuenciacionesService")
+public class SecuenciacionesServiceImpl implements SecuenciacionesService {
 
 	@Autowired
 	private RequerimientoRepository requeRepo;
@@ -107,12 +116,21 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 	@Autowired
 	private DocumentoEvidenciaRepository docRepo;
 	@Autowired
+	private TecnicaRepository tecRepo;
+	@Autowired
+	private ReactivoRepository reacRepo;
+	@Autowired
 	private RequerimientoEstadoRepository reqEstaRep;
 
 	@Override
 	public List<RequerimientoResponseLista> findAll() {
 		try {
-			List<Requerimiento> requerimientos = (List<Requerimiento>) requeRepo.findAll();
+			List<RequerimientoEstado> ids = reqEstaRep.findAllByStatusId(2);
+			List<Requerimiento> requerimientos = new ArrayList<>();
+			for (RequerimientoEstado id : ids) {
+				Requerimiento req = requeRepo.findFirstByIdAndIsSequencedTrue(id.getRequirementId());
+				if (req != null) requerimientos.add(req);
+			}
 			List<RequerimientoResponseLista> requeResL = new ArrayList<>();
 			RequerimientoResponseLista requeRes;
 			for (Requerimiento requerimiento : requerimientos) {
@@ -137,8 +155,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 					UsuarioFirmante uf = ufRepo.findById(requerimiento.getReceptionUserId()).get();
 					requeRes.setReceptionUser(getName(uf.getPrefix(), uf.getName(), uf.getLastname(), uf.getSuffix()));
 				}
-				requeRes.setEvidence(
-						docRepo.findByRequirementIdAndDocumentTypeId(requerimiento.getId(), 1) != null ? true : false);
+				requeRes.setEvidence(docRepo.findByRequirementIdAndDocumentTypeId(requerimiento.getId(), 1) != null ? true : false);
 				requeResL.add(requeRes);
 			}
 			return requeResL;
@@ -176,97 +193,36 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 	}
 
 	@Override
-	public List<RequerimientoResponseLista> save(RequerimientoRequest requerimientoRequest) {
+	public List<RequerimientoResponseLista> save(SecuenciacionRequest requerimientoRequest) {
+		System.out.println(requerimientoRequest.getDetails());
 		try {
 			Calendar fechaActual = Calendar.getInstance();
 			Requerimiento requerimiento = new Requerimiento();
 			if (requerimientoRequest.getId() != null) {
 				requerimiento = requeRepo.findById(requerimientoRequest.getId()).get();
-				requerimiento.setModifiedBy(requerimientoRequest.getReceptionUserId());
+				String[] usersProcess = requerimientoRequest.getProcessingUsersId().split(",");
+				requerimiento.setModifiedBy(Integer.parseInt(usersProcess[usersProcess.length - 1]));
 				requerimiento.setModifiedAt(fechaActual);
-			} else {
-				Requerimiento reqId = requeRepo.findFirstByOrderByIdDesc();
-				if (reqId != null)
-					requerimiento.setId(reqId.getId() + 1);
-				else
-					requerimiento.setId(1);
-				Requerimiento number = requeRepo.findFirstByOrderByNumberDesc();
-				if (number != null) {
-					requerimiento.setNumber(number.getNumber() + 1);
-					requerimiento.setCode(
-							"LAM-" + fechaActual.get(Calendar.YEAR) + "-" + String.format("%03d", (reqId.getId() + 1)));
-				} else {
-					requerimiento.setNumber(1);
-					requerimiento.setCode("LAM-" + fechaActual.get(Calendar.YEAR) + "-001");
-				}
-				RequerimientoEstado reqEstado = reqEstaRep.findFirstByOrderByIdDesc();
-				reqEstado = reqEstaRep.save(new RequerimientoEstado((reqEstado.getId() + 1), requerimiento.getId(), 1 ));
-				requerimiento.setCreatedBy(requerimientoRequest.getReceptionUserId());
-				requerimiento.setCreatedAt(fechaActual);
 			}
-			requerimiento.setEntryDate(stringToCalendar(requerimientoRequest.getEntryDate()));
-			requerimiento.setAreaProjectId(requerimientoRequest.getAreaProjectId());
-			requerimiento.setAnalysisId(requerimientoRequest.getAnalysisId());
-			requerimiento.setIsSequenced(requerimientoRequest.getIsSequenced());
-			requerimiento.setTypeSampleId(requerimientoRequest.getTypeSampleId());
-			requerimiento.setTypeSampleId(requerimientoRequest.getTypeSampleId());
-			requerimiento.setNumberSamples(requerimientoRequest.getDetails().size());
-			requerimiento.setSpecificationId(requerimientoRequest.getSpecificationId());
-			requerimiento.setObservationRequirement(requerimientoRequest.getObservationRequirement());
-			requerimiento.setObservationEntry(requerimientoRequest.getObservationEntry());
-			requerimiento.setRequerimentUserId(requerimientoRequest.getRequerimentUserId());
-			requerimiento.setReceptionUserId(requerimientoRequest.getReceptionUserId());
-			int nA = 0;
-			for (RequerimientoDetallesRequest detalleReq : requerimientoRequest.getDetails()) {
-				if (detalleReq.isAccepted()) {
-					nA = nA + 1;
-				}
-			}
-			requerimiento.setNumberAcceptedSamples(nA);
-			requerimiento.setNumberUnacceptedSamples(requerimiento.getNumberSamples() - nA);
+			requerimiento.setShippingReceptionDate(stringToCalendar(requerimientoRequest.getShippingReceptionDate()));
+			requerimiento.setIsShipping(requerimientoRequest.getIsShipping());
+			requerimiento.setObservationSequence(requerimientoRequest.getObservationSequence());
 			requerimiento = requeRepo.save(requerimiento);
-
-			String codeTipe = tmRepo.findFirstById(requerimiento.getTypeSampleId()).getCode();
-			for (RequerimientoDetallesRequest detalleReq : requerimientoRequest.getDetails()) {
+			for (SecuenciacionDetallesRequest detalleReq : requerimientoRequest.getDetails()) {
 				RequerimientoDetalle detalle = new RequerimientoDetalle();
 				if (detalleReq.getId() != null) {
 					detalle = requeDetRepo.findById(detalleReq.getId()).get();
-					detalle.setModifiedBy(requerimientoRequest.getReceptionUserId());
+					String[] usersProcess = requerimientoRequest.getProcessingUsersId().split(",");
+					detalle.setModifiedBy(Integer.parseInt(usersProcess[usersProcess.length - 1]));
 					detalle.setModifiedAt(fechaActual);
-				} else {
-					RequerimientoDetalle reqDetId = requeDetRepo.findFirstByOrderByIdDesc();
-					if (reqDetId != null)
-						detalle.setId(reqDetId.getId() + 1);
-					else
-						detalle.setId(1);
-					detalle.setRequirementId(requerimiento.getId());
-					RequerimientoDetalle serial = requeDetRepo.findFirstByOrderBySerialDesc();
-					if (serial != null)
-						detalle.setSerial(serial.getSerial() + 1);
-					else
-						detalle.setSerial(1);
-					detalle.setCode("MOL-" + fechaActual.get(Calendar.YEAR) + "-" + codeTipe + "-"
-							+ String.format("%04d", detalle.getSerial()));
-					detalle.setCreatedBy(requerimientoRequest.getReceptionUserId());
-					detalle.setCreatedAt(fechaActual);
 				}
-				detalle.setPlaceCode(detalleReq.getPlaceCode());
-				detalle.setCollectionDate(stringToCalendar(detalleReq.getCollectionDate()));
-				detalle.setTaxonomicId(detalleReq.getTaxonomicId());
-				detalle.setGenderId(detalleReq.getGenderId());
-				detalle.setProvinceId(detalleReq.getProvinceId());
-				detalle.setCantonId(detalleReq.getCantonId());
-				detalle.setParishId(detalleReq.getParishId());
-				detalle.setLatitude(detalleReq.getLatitude());
-				detalle.setLongitude(detalleReq.getLongitude());
-				detalle.setPreprocessed(detalleReq.isPreprocessed());
-				detalle.setPlaceCode(detalleReq.getPlaceCode());
-				detalle.setAccepted(detalleReq.isAccepted());
-				detalle.setReasonUnacceptedSamples(detalleReq.getReazonNoAccepted());
-				detalle.setStorageId(detalleReq.getStorageId());
-				detalle.setNumberBox(detalleReq.getNumberBox());
-				detalle.setYearCode(detalleReq.getYearCode());
-				detalle.setObservationSampleDetail(detalleReq.getObservationSampleDetail());
+				detalle.setPrimer(detalleReq.getPrimer());
+				detalle.setSequence(detalleReq.getSequence());
+				detalle.setConcentration(detalleReq.getConcentration());
+				detalle.setIsFasta(detalleReq.getIsFasta());
+				detalle.setQuality(detalleReq.getQuality());
+				detalle.setIdentity(detalleReq.getIdentity());
+				detalle.setOrganism(detalleReq.getOrganism());
 				requeDetRepo.save(detalle);
 			}
 		} catch (ParseException e) {
@@ -278,92 +234,57 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 	}
 
 	@Override
-	public RequerimientoResponseEditar findById(Integer requerimientoId) {
-		try {
-			RequerimientoResponseEditar reqResEdit = new RequerimientoResponseEditar();
-			List<RequerimientoDetallesResponseEditar> reqResDetEdit = new ArrayList<>();
-			RequerimientoDetallesResponseEditar reqDetEdit;
-			Requerimiento req = requeRepo.findById(requerimientoId).get();
-			List<RequerimientoDetalle> reqDets = requeDetRepo.findAllByRequirementId(requerimientoId);
-			reqResEdit.setId(req.getId());
-			reqResEdit.setEntryDate(req.getEntryDate());
-			reqResEdit.setAreaProjectId(req.getAreaProjectId());
-			ProyectoArea pa = proyectoRepo.findById(req.getAreaProjectId()).get();
-			reqResEdit.setAreaProject(pa.getName());
-			reqResEdit.setAnalysisId(req.getAnalysisId());
-			Analisis an = anaRepo.findById(req.getAnalysisId()).get();
-			reqResEdit.setAnalysis(an.getName());
-			reqResEdit.setSpecificationId(req.getSpecificationId());
-			Especificacion es = esRepoy.findById(req.getSpecificationId()).get();
-			reqResEdit.setSpecification(es.getName());
-			reqResEdit.setIsSequenced(req.getIsSequenced());
-			TipoMuestra tm = tmRepo.findById(req.getTypeSampleId()).get();
-			reqResEdit.setTypeSample(tm.getName());
-			reqResEdit.setTypeSampleId(req.getTypeSampleId());
-			reqResEdit.setObservationRequirement(req.getObservationRequirement());
-			reqResEdit.setObservationEntry(req.getObservationEntry());
-			reqResEdit.setRequerimentUserId(req.getRequerimentUserId());
-			if (req.getRequerimentUserId() != null) {
-				UsuarioFirmante uf = ufRepo.findById(req.getRequerimentUserId()).get();
-				reqResEdit.setRequerimentUser(getName(uf.getPrefix(), uf.getName(), uf.getLastname(), uf.getSuffix()));
-			}
-			reqResEdit.setReceptionUserId(req.getReceptionUserId());
-			if (req.getReceptionUserId() != null) {
-				UsuarioFirmante uf = ufRepo.findById(req.getReceptionUserId()).get();
-				reqResEdit.setReceptionUser(getName(uf.getPrefix(), uf.getName(), uf.getLastname(), uf.getSuffix()));
-			}
-			for (RequerimientoDetalle reqDet : reqDets) {
-				reqDetEdit = new RequerimientoDetallesResponseEditar();
-				reqDetEdit.setId(reqDet.getId());
-				reqDetEdit.setPlaceCode(reqDet.getPlaceCode());
-				reqDetEdit.setCollectionDate(calendarToString(reqDet.getCollectionDate()));
-				reqDetEdit.setTaxonomicId(reqDet.getTaxonomicId());
-				Taxonomia tax = taxRepo.findById(reqDet.getTaxonomicId()).get();
-				reqDetEdit.setTaxonomic(tax.getName());
-				reqDetEdit.setProvinceId(reqDet.getProvinceId());
-				Provincia prov = provRepo.findById(reqDet.getProvinceId()).get();
-				reqDetEdit.setProvince(prov.getName());
-				reqDetEdit.setCantonId(reqDet.getCantonId());
-				Canton cant = cantRepo.findById(reqDet.getCantonId()).get();
-				reqDetEdit.setCanton(cant.getName());
-				reqDetEdit.setParishId(reqDet.getParishId());
-				Parroquia parr = prarrRepo.findById(reqDet.getParishId()).get();
-				reqDetEdit.setParish(parr.getName());
-				reqDetEdit.setLatitude(reqDet.getLatitude());
-				reqDetEdit.setLongitude(reqDet.getLongitude());
-				reqDetEdit.setGenderId(reqDet.getGenderId());
-				Genero gen = genRepo.findById(reqDet.getGenderId()).get();
-				reqDetEdit.setGender(gen.getName());
-				if (reqDet.isPreprocessed())
-					reqDetEdit.setIsPreprocessed("Sí");
-				else
-					reqDetEdit.setIsPreprocessed("No");
-				if (reqDet.isAccepted())
-					reqDetEdit.setIsAccepted("Sí");
-				else
-					reqDetEdit.setIsAccepted("No");
-				reqDetEdit.setPreprocessedId(reqDet.isPreprocessed());
-				reqDetEdit.setAcceptedId(reqDet.isAccepted());
-				reqDetEdit.setReazonNoAccepted(reqDet.getReasonUnacceptedSamples());
-				reqDetEdit.setStorageId(reqDet.getStorageId());
-				Almacenamiento al = alRepo.findById(reqDet.getStorageId()).get();
-				if (al.getText01().length() > 0 && al.getText02().length() > 0 && al.getText03() == null) {
-					reqDetEdit.setStorage(al.getText01() + " " + reqDet.getNumberBox() + al.getText02());
-				} else if (al.getText01().length() > 0 && al.getText02().length() > 0 && al.getText03().length() > 0) {
-					reqDetEdit.setStorage(al.getText01() + " " + reqDet.getNumberBox() + al.getText02() + " "
-							+ reqDet.getYearCode() + al.getText03());
+	public SecuenciacionResponseEditar findById(Integer requerimientoId) {
+		SecuenciacionResponseEditar reqResEdit = new SecuenciacionResponseEditar();
+		List<SecuenciacionDetallesResponseEditar> reqResDetEdit = new ArrayList<>();
+		SecuenciacionDetallesResponseEditar reqDetEdit;
+		Requerimiento req = requeRepo.findById(requerimientoId).get();
+		List<RequerimientoDetalle> reqDets = requeDetRepo.findAllByRequirementId(requerimientoId);
+		reqResEdit.setId(req.getId());
+		reqResEdit.setEntryDate(req.getEntryDate());
+		reqResEdit.setAreaProjectId(req.getAreaProjectId());
+		ProyectoArea pa = proyectoRepo.findById(req.getAreaProjectId()).get();
+		reqResEdit.setAreaProject(pa.getName());
+		reqResEdit.setAnalysisId(req.getAnalysisId());
+		Analisis an = anaRepo.findById(req.getAnalysisId()).get();
+		reqResEdit.setAnalysis(an.getName());
+		reqResEdit.setShippingReceptionDate(req.getShippingReceptionDate());
+		TipoMuestra tm = tmRepo.findById(req.getTypeSampleId()).get();
+		reqResEdit.setTypeSample(tm.getName());
+		reqResEdit.setTypeSampleId(req.getTypeSampleId());
+		reqResEdit.setIsShipping(req.getIsShipping());
+		reqResEdit.setObservationSequence(req.getObservationSequence());
+		
+		if (req.getProcessingUsersId() != null) {
+			reqResEdit.setProcessingUsersId(req.getProcessingUsersId());
+			String[] usersProcess = req.getProcessingUsersId().split(",");
+			String usersProcessConcat = "";
+			String userProc = "";
+			for (String userId : usersProcess) {
+				if (req.getRequerimentUserId() != null) {
+					UsuarioFirmante uf = ufRepo.findById(Integer.parseInt(userId)).get();
+					userProc = getName("", uf.getName(), uf.getLastname(), "");
 				}
-				reqDetEdit.setBox(reqDet.getNumberBox());
-				reqDetEdit.setYear(reqDet.getYearCode());
-				reqDetEdit.setObservations(reqDet.getObservationSampleDetail());
-				reqResDetEdit.add(reqDetEdit);
+				usersProcessConcat = usersProcessConcat + userProc;
 			}
-			reqResEdit.setDetails(reqResDetEdit);
-			return reqResEdit;
-		} catch (ParseException e) {
-			e.printStackTrace();
+			reqResEdit.setProcessingUsers(usersProcessConcat);
 		}
-		return null;
+		for (RequerimientoDetalle reqDet : reqDets) {
+			reqDetEdit = new SecuenciacionDetallesResponseEditar();
+			reqDetEdit.setId(reqDet.getId());
+			reqDetEdit.setPlaceCode(reqDet.getPlaceCode());
+			;
+			reqDetEdit.setPrimer(reqDet.getPrimer());
+			reqDetEdit.setSequence(reqDet.getSequence());
+			reqDetEdit.setConcentration(reqDet.getConcentration());
+			reqDetEdit.setIsFasta(reqDet.getIsFasta() ? "Si" : "No");
+			reqDetEdit.setQuality(reqDet.getQuality());
+			reqDetEdit.setIdentity(reqDet.getIdentity());
+			reqDetEdit.setOrganism(reqDet.getOrganism());
+			reqResDetEdit.add(reqDetEdit);
+		}
+		reqResEdit.setDetails(reqResDetEdit);
+		return reqResEdit;
 	}
 
 	@Override
@@ -384,7 +305,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
 			JasperPrint empReport = JasperFillManager.fillReport(
 					JasperCompileManager.compileReport(
-							ResourceUtils.getFile("classpath:reports/reporte_registro.jrxml").getAbsolutePath()),
+							ResourceUtils.getFile("classpath:reports/reporte_secuenciacion.jrxml").getAbsolutePath()),
 					parameters // dynamic parameters
 					, dataSource.getConnection());
 
@@ -405,7 +326,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 			doc.setDocument(requerimiento.getEvidence());
 			docRepo.save(doc);
 			return findAll();
-		} else {
+		}else {
 			doc = new DocumentosEvidencia();
 			DocumentosEvidencia docFirst = docRepo.findFirstByOrderByIdDesc();
 			if (docFirst != null)
@@ -419,7 +340,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 			doc.setCreatedBy(requerimiento.getUserId());
 			docRepo.save(doc);
 			return findAll();
-		}
+		}	
 	}
 
 }

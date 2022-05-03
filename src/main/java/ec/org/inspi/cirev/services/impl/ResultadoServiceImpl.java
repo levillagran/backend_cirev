@@ -1,6 +1,5 @@
 package ec.org.inspi.cirev.services.impl;
 
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -14,7 +13,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
@@ -27,12 +25,10 @@ import ec.org.inspi.cirev.models.Genero;
 import ec.org.inspi.cirev.models.Parroquia;
 import ec.org.inspi.cirev.models.Provincia;
 import ec.org.inspi.cirev.models.ProyectoArea;
-import ec.org.inspi.cirev.models.Reactivo;
 import ec.org.inspi.cirev.models.Requerimiento;
 import ec.org.inspi.cirev.models.RequerimientoDetalle;
 import ec.org.inspi.cirev.models.RequerimientoEstado;
 import ec.org.inspi.cirev.models.Taxonomia;
-import ec.org.inspi.cirev.models.Tecnica;
 import ec.org.inspi.cirev.models.TipoMuestra;
 import ec.org.inspi.cirev.models.UsuarioFirmante;
 import ec.org.inspi.cirev.payload.request.RequerimientoDetallesRequest;
@@ -50,31 +46,20 @@ import ec.org.inspi.cirev.repositories.GeneroRepository;
 import ec.org.inspi.cirev.repositories.ParroquiaRepository;
 import ec.org.inspi.cirev.repositories.ProvinciaRepository;
 import ec.org.inspi.cirev.repositories.ProyectoAreaRepository;
-import ec.org.inspi.cirev.repositories.ReactivoRepository;
 import ec.org.inspi.cirev.repositories.RequerimientoDetalleRepository;
 import ec.org.inspi.cirev.repositories.RequerimientoEstadoRepository;
 import ec.org.inspi.cirev.repositories.RequerimientoRepository;
 import ec.org.inspi.cirev.repositories.TaxonomiaRepository;
-import ec.org.inspi.cirev.repositories.TecnicaRepository;
 import ec.org.inspi.cirev.repositories.TipoMuestraRepository;
 import ec.org.inspi.cirev.repositories.UsuarioFirmanteRepository;
-import ec.org.inspi.cirev.services.RequerimientoService;
-import net.sf.jasperreports.engine.JREmptyDataSource;
-import net.sf.jasperreports.engine.JRException;
+import ec.org.inspi.cirev.services.ResultadoService;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.util.JRLoader;
-import net.sf.jasperreports.engine.xml.JRXmlLoader;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-
-@Service("requerimientoService")
-public class RequerimientoServiceImpl implements RequerimientoService {
+@Service("resultadoService")
+public class ResultadoServiceImpl implements ResultadoService {
 
 	@Autowired
 	private RequerimientoRepository requeRepo;
@@ -112,7 +97,13 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 	@Override
 	public List<RequerimientoResponseLista> findAll() {
 		try {
-			List<Requerimiento> requerimientos = (List<Requerimiento>) requeRepo.findAll();
+			List<RequerimientoEstado> ids = reqEstaRep.findAllByStatusId(4);
+			List<Requerimiento> requerimientos = new ArrayList<>();
+			for (RequerimientoEstado id : ids) {
+				Requerimiento req = requeRepo.findById(id.getRequirementId()).get();
+				if (req != null)
+					requerimientos.add(req);
+			}
 			List<RequerimientoResponseLista> requeResL = new ArrayList<>();
 			RequerimientoResponseLista requeRes;
 			for (Requerimiento requerimiento : requerimientos) {
@@ -199,8 +190,6 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 					requerimiento.setNumber(1);
 					requerimiento.setCode("LAM-" + fechaActual.get(Calendar.YEAR) + "-001");
 				}
-				RequerimientoEstado reqEstado = reqEstaRep.findFirstByOrderByIdDesc();
-				reqEstado = reqEstaRep.save(new RequerimientoEstado((reqEstado.getId() + 1), requerimiento.getId(), 1 ));
 				requerimiento.setCreatedBy(requerimientoRequest.getReceptionUserId());
 				requerimiento.setCreatedAt(fechaActual);
 			}
@@ -225,7 +214,6 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 			requerimiento.setNumberAcceptedSamples(nA);
 			requerimiento.setNumberUnacceptedSamples(requerimiento.getNumberSamples() - nA);
 			requerimiento = requeRepo.save(requerimiento);
-
 			String codeTipe = tmRepo.findFirstById(requerimiento.getTypeSampleId()).getCode();
 			for (RequerimientoDetallesRequest detalleReq : requerimientoRequest.getDetails()) {
 				RequerimientoDetalle detalle = new RequerimientoDetalle();
@@ -384,7 +372,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 
 			JasperPrint empReport = JasperFillManager.fillReport(
 					JasperCompileManager.compileReport(
-							ResourceUtils.getFile("classpath:reports/reporte_registro.jrxml").getAbsolutePath()),
+							ResourceUtils.getFile("classpath:reports/reporte_resultados.jrxml").getAbsolutePath()),
 					parameters // dynamic parameters
 					, dataSource.getConnection());
 

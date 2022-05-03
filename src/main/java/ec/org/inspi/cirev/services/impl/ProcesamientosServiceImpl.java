@@ -29,6 +29,7 @@ import ec.org.inspi.cirev.models.ProyectoArea;
 import ec.org.inspi.cirev.models.Reactivo;
 import ec.org.inspi.cirev.models.Requerimiento;
 import ec.org.inspi.cirev.models.RequerimientoDetalle;
+import ec.org.inspi.cirev.models.RequerimientoEstado;
 import ec.org.inspi.cirev.models.Taxonomia;
 import ec.org.inspi.cirev.models.Tecnica;
 import ec.org.inspi.cirev.models.TipoMuestra;
@@ -54,6 +55,7 @@ import ec.org.inspi.cirev.repositories.ProvinciaRepository;
 import ec.org.inspi.cirev.repositories.ProyectoAreaRepository;
 import ec.org.inspi.cirev.repositories.ReactivoRepository;
 import ec.org.inspi.cirev.repositories.RequerimientoDetalleRepository;
+import ec.org.inspi.cirev.repositories.RequerimientoEstadoRepository;
 import ec.org.inspi.cirev.repositories.RequerimientoRepository;
 import ec.org.inspi.cirev.repositories.TaxonomiaRepository;
 import ec.org.inspi.cirev.repositories.TecnicaRepository;
@@ -112,18 +114,25 @@ public class ProcesamientosServiceImpl implements ProcesamientosService {
 	private TecnicaRepository tecRepo;
 	@Autowired
 	private ReactivoRepository reacRepo;
+	@Autowired
+	private RequerimientoEstadoRepository reqEstaRep;
 
 	@Override
 	public List<RequerimientoResponseLista> findAll() {
 		try {
-			List<Requerimiento> requerimientos = (List<Requerimiento>) requeRepo.findAll();
+			List<RequerimientoEstado> ids = reqEstaRep.findAllByStatusId(2);
+			List<Requerimiento> requerimientos = new ArrayList<>();
+			for (RequerimientoEstado id : ids) {
+				Requerimiento req = requeRepo.findFirstByIdAndIsSequencedFalse(id.getRequirementId());
+				if (req != null) requerimientos.add(req);
+			}
+			
 			List<RequerimientoResponseLista> requeResL = new ArrayList<>();
 			RequerimientoResponseLista requeRes;
 			for (Requerimiento requerimiento : requerimientos) {
-				requeRes = new RequerimientoResponseLista(null, null, null, null, null, null, null, null, null, null,
-						null);
+				requeRes = new RequerimientoResponseLista();
 				requeRes.setId(requerimiento.getId());
-				requeRes.setNumber(String.format("%04d", requerimiento.getNumber()));
+				requeRes.setNumber(requerimiento.getCode());
 				requeRes.setEntryDate(calendarToString(requerimiento.getEntryDate()));
 				ProyectoArea pa = proyectoRepo.findById(requerimiento.getAreaProjectId()).get();
 				requeRes.setAreaProject(pa.getName());
@@ -295,7 +304,7 @@ public class ProcesamientosServiceImpl implements ProcesamientosService {
 
 			JasperPrint empReport = JasperFillManager.fillReport(
 					JasperCompileManager.compileReport(
-							ResourceUtils.getFile("classpath:reports/reporte_registro.jrxml").getAbsolutePath()),
+							ResourceUtils.getFile("classpath:reports/reporte_proceso.jrxml").getAbsolutePath()),
 					parameters // dynamic parameters
 					, dataSource.getConnection());
 
