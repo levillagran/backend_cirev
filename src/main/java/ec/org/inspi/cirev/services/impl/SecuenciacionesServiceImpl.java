@@ -129,7 +129,8 @@ public class SecuenciacionesServiceImpl implements SecuenciacionesService {
 			List<Requerimiento> requerimientos = new ArrayList<>();
 			for (RequerimientoEstado id : ids) {
 				Requerimiento req = requeRepo.findFirstByIdAndIsSequencedTrue(id.getRequirementId());
-				if (req != null) requerimientos.add(req);
+				if (req != null)
+					requerimientos.add(req);
 			}
 			List<RequerimientoResponseLista> requeResL = new ArrayList<>();
 			RequerimientoResponseLista requeRes;
@@ -155,7 +156,8 @@ public class SecuenciacionesServiceImpl implements SecuenciacionesService {
 					UsuarioFirmante uf = ufRepo.findById(requerimiento.getReceptionUserId()).get();
 					requeRes.setReceptionUser(getName(uf.getPrefix(), uf.getName(), uf.getLastname(), uf.getSuffix()));
 				}
-				requeRes.setEvidence(docRepo.findByRequirementIdAndDocumentTypeId(requerimiento.getId(), 1) != null ? true : false);
+				requeRes.setEvidence(
+						docRepo.findByRequirementIdAndDocumentTypeId(requerimiento.getId(), 1) != null ? true : false);
 				requeResL.add(requeRes);
 			}
 			return requeResL;
@@ -204,9 +206,12 @@ public class SecuenciacionesServiceImpl implements SecuenciacionesService {
 				requerimiento.setModifiedBy(Integer.parseInt(usersProcess[usersProcess.length - 1]));
 				requerimiento.setModifiedAt(fechaActual);
 			}
-			requerimiento.setShippingReceptionDate(stringToCalendar(requerimientoRequest.getShippingReceptionDate()));
-			requerimiento.setIsShipping(requerimientoRequest.getIsShipping());
-			requerimiento.setObservationSequence(requerimientoRequest.getObservationSequence());
+			if (requerimientoRequest.getShippingDate() != null)
+				requerimiento.setShippingDate(stringToCalendar(requerimientoRequest.getShippingDate()));
+			if (requerimientoRequest.getReceptionDate() != null)
+				requerimiento.setReceptionDate(stringToCalendar(requerimientoRequest.getReceptionDate()));
+			requerimiento.setObservationShipping(requerimientoRequest.getObservationShipping());
+			requerimiento.setObservationReception(requerimientoRequest.getObservationReception());
 			requerimiento = requeRepo.save(requerimiento);
 			for (SecuenciacionDetallesRequest detalleReq : requerimientoRequest.getDetails()) {
 				RequerimientoDetalle detalle = new RequerimientoDetalle();
@@ -248,13 +253,18 @@ public class SecuenciacionesServiceImpl implements SecuenciacionesService {
 		reqResEdit.setAnalysisId(req.getAnalysisId());
 		Analisis an = anaRepo.findById(req.getAnalysisId()).get();
 		reqResEdit.setAnalysis(an.getName());
-		reqResEdit.setShippingReceptionDate(req.getShippingReceptionDate());
+		if (req.getShippingDate() != null)
+			reqResEdit.setShippingDate(req.getShippingDate());
+		if (req.getShippingDate() != null)
+			reqResEdit.setReceptionDate(req.getReceptionDate());
 		TipoMuestra tm = tmRepo.findById(req.getTypeSampleId()).get();
 		reqResEdit.setTypeSample(tm.getName());
 		reqResEdit.setTypeSampleId(req.getTypeSampleId());
-		reqResEdit.setIsShipping(req.getIsShipping());
-		reqResEdit.setObservationSequence(req.getObservationSequence());
-		
+		if (req.getObservationShipping() != null)
+			reqResEdit.setObservationShipping(req.getObservationShipping());
+		if (req.getObservationReception() != null)
+			reqResEdit.setObservationReception(req.getObservationReception());
+
 		if (req.getProcessingUsersId() != null) {
 			reqResEdit.setProcessingUsersId(req.getProcessingUsersId());
 			String[] usersProcess = req.getProcessingUsersId().split(",");
@@ -326,7 +336,7 @@ public class SecuenciacionesServiceImpl implements SecuenciacionesService {
 			doc.setDocument(requerimiento.getEvidence());
 			docRepo.save(doc);
 			return findAll();
-		}else {
+		} else {
 			doc = new DocumentosEvidencia();
 			DocumentosEvidencia docFirst = docRepo.findFirstByOrderByIdDesc();
 			if (docFirst != null)
@@ -340,7 +350,7 @@ public class SecuenciacionesServiceImpl implements SecuenciacionesService {
 			doc.setCreatedBy(requerimiento.getUserId());
 			docRepo.save(doc);
 			return findAll();
-		}	
+		}
 	}
 
 }

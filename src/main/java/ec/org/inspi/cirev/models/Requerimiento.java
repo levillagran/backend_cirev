@@ -74,12 +74,14 @@ public class Requerimiento {
 	private String processingUsersId;
 	@Column(name = "approval_user_id")
 	private Integer approvalUserId;
-	@Column(name = "observation_sequence")
-	private String observationSequence;
-	@Column(name = "is_shipping")
-	private Boolean isShipping;
-	@Column(name = "shipping_reception_date")
-	private Calendar shippingReceptionDate;
+	@Column(name = "observation_shipping")
+	private String observationShipping;
+	@Column(name = "observation_reception")
+	private String observationReception;
+	@Column(name = "shipping_date")
+	private Calendar shippingDate;
+	@Column(name = "reception_date")
+	private Calendar receptionDate;
 	
 	@Column(name = "created_at")
 	private Calendar createdAt;

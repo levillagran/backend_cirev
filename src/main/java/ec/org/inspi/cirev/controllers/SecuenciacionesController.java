@@ -33,7 +33,6 @@ public class SecuenciacionesController {
 	
 	@PostMapping(value = "/save")
 	public List<RequerimientoResponseLista> save(@RequestBody SecuenciacionRequest requerimiento) {
-		System.out.println(requerimiento);
 		return secuenciacionesService.save(requerimiento);
 	}
 	

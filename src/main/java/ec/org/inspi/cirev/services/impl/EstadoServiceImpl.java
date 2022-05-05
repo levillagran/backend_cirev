@@ -22,9 +22,10 @@ public class EstadoServiceImpl implements EstadoService {
 	private RequerimientoService reqSer;
 
 	@Override
-	public List<RequerimientoResponseLista> change(EstadoRequest requerimiento) {
+	public List<RequerimientoResponseLista> changeStatus(EstadoRequest requerimiento) {
 		RequerimientoEstado reqEs = reqEstaRep.findById(requerimiento.getRequerimientoId()).get();
 		reqEs.setStatusId(requerimiento.getEstadoId());
+		reqEstaRep.save(reqEs);
 		return reqSer.findAll();
 	}
 

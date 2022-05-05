@@ -20,8 +20,8 @@ public class EstadosController {
 	@Autowired
 	private EstadoService estadoService;
 
-	@PostMapping(value = "/save")
-	public List<RequerimientoResponseLista> saveUsuario(@RequestBody EstadoRequest requerimiento) {
-		return estadoService.change(requerimiento);
+	@PostMapping(value = "/changeStatus")
+	public List<RequerimientoResponseLista> changeStatus(@RequestBody EstadoRequest requerimiento) {
+		return estadoService.changeStatus(requerimiento);
 	}
 }

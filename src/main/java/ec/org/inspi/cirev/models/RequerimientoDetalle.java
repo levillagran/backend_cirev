@@ -62,10 +62,30 @@ public class RequerimientoDetalle {
 	private Integer yearCode;
 	@Column(name = "observation_sample_detail")
 	private String observationSampleDetail;
-	@Column(name = "processing_results")
-	private String processingResults;
-	@Column(name = "observation_results")
-	private String observationResults;
+	@Column(name = "result_process_01")
+	private String resultProcess01;
+	@Column(name = "result_process_02")
+	private String resultProcess02;
+	@Column(name = "result_process_03")
+	private String resultProcess03;
+	@Column(name = "result_process_04")
+	private String resultProcess04;
+	@Column(name = "observation_process_01")
+	private String observationProcess01;
+	@Column(name = "observation_process_02")
+	private String observationProcess02;
+	@Column(name = "observation_process_03")
+	private String observationProcess03;
+	@Column(name = "observation_process_04")
+	private String observationProcess04;
+	@Column(name = "date_process_01")
+	private Calendar dateProcess01;
+	@Column(name = "date_process_02")
+	private Calendar dateProcess02;
+	@Column(name = "date_process_03")
+	private Calendar dateProcess03;
+	@Column(name = "date_process_04")
+	private Calendar dateProcess04;
 	@Column(name = "primer")
 	private String primer;
 	@Column(name = "sequence")

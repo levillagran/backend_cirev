@@ -6,7 +6,7 @@
 	<subDataset name="Dataset1" uuid="823fdd45-ff11-47ee-a28a-fcb8bf840949"/>
 	<parameter name="requirementId" class="java.lang.Integer"/>
 	<queryString language="SQL">
-		<![CDATA[SELECT to_char(r.number,'0000') number, to_char(r.shipping_reception_date,'DD/MM/YYYY') shippingDate, 
+		<![CDATA[SELECT r.code number, to_char(r.shipping_date,'DD/MM/YYYY') shippingDate, 
 					(su.prefix || ' ' || su.name || ' ' || su.lastname || ' ' || su.suffix) responsable,
 					(su.prefix || ' ' || su.name || ' ' || su.lastname || ' ' || su.suffix) as validator,
 					(su.prefix || ' ' || su.name || ' ' || su.lastname || ' ' || su.suffix) approval,

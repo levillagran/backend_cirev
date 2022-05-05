@@ -11,7 +11,8 @@ public class SecuenciacionResponseEditar {
 
 	private Integer id;
 	private Calendar entryDate;
-	private Calendar shippingReceptionDate;
+	private Calendar shippingDate;
+	private Calendar receptionDate;
 	private String areaProject;
 	private Integer areaProjectId;
 	private String analysis;
@@ -19,8 +20,8 @@ public class SecuenciacionResponseEditar {
 	private String typeSample;
 	private Integer typeSampleId;
 	
-	private Boolean isShipping;
-	private String observationSequence;
+	private String observationShipping;
+	private String observationReception;
 	
 	private String processingUsers;
 	private String processingUsersId;

@@ -124,9 +124,10 @@ public class ProcesamientosServiceImpl implements ProcesamientosService {
 			List<Requerimiento> requerimientos = new ArrayList<>();
 			for (RequerimientoEstado id : ids) {
 				Requerimiento req = requeRepo.findFirstByIdAndIsSequencedFalse(id.getRequirementId());
-				if (req != null) requerimientos.add(req);
+				if (req != null)
+					requerimientos.add(req);
 			}
-			
+
 			List<RequerimientoResponseLista> requeResL = new ArrayList<>();
 			RequerimientoResponseLista requeRes;
 			for (Requerimiento requerimiento : requerimientos) {
@@ -151,7 +152,8 @@ public class ProcesamientosServiceImpl implements ProcesamientosService {
 					UsuarioFirmante uf = ufRepo.findById(requerimiento.getReceptionUserId()).get();
 					requeRes.setReceptionUser(getName(uf.getPrefix(), uf.getName(), uf.getLastname(), uf.getSuffix()));
 				}
-				requeRes.setEvidence(docRepo.findByRequirementIdAndDocumentTypeId(requerimiento.getId(), 1) != null ? true : false);
+				requeRes.setEvidence(
+						docRepo.findByRequirementIdAndDocumentTypeId(requerimiento.getId(), 1) != null ? true : false);
 				requeResL.add(requeRes);
 			}
 			return requeResL;
@@ -199,7 +201,6 @@ public class ProcesamientosServiceImpl implements ProcesamientosService {
 				requerimiento.setModifiedBy(Integer.parseInt(usersProcess[usersProcess.length - 1]));
 				requerimiento.setModifiedAt(fechaActual);
 			}
-			requerimiento.setProcessingDate(stringToCalendar(requerimientoRequest.getProcessingDate()));
 			requerimiento.setTechniqueId(requerimientoRequest.getTechniqueId());
 			requerimiento.setKitReagentId(requerimientoRequest.getKitReagentId());
 			requerimiento = requeRepo.save(requerimiento);
@@ -211,8 +212,15 @@ public class ProcesamientosServiceImpl implements ProcesamientosService {
 					detalle.setModifiedBy(Integer.parseInt(usersProcess[usersProcess.length - 1]));
 					detalle.setModifiedAt(fechaActual);
 				}
-				detalle.setProcessingResults(detalleReq.getProcessingResults());
-				detalle.setObservationResults(detalleReq.getObservationResults());
+				detalle.setResultProcess01(detalleReq.getProcessingResults01());
+				detalle.setObservationProcess01(detalleReq.getObservationResults01());
+				detalle.setDateProcess01(stringToCalendar(detalleReq.getDateResults01()));
+				detalle.setResultProcess02(detalleReq.getProcessingResults02());
+				detalle.setObservationProcess02(detalleReq.getObservationResults02());
+				detalle.setDateProcess02(stringToCalendar(detalleReq.getDateResults02()));
+				detalle.setResultProcess03(detalleReq.getProcessingResults03());
+				detalle.setObservationProcess03(detalleReq.getObservationResults03());
+				detalle.setDateProcess03(stringToCalendar(detalleReq.getDateResults03()));
 				requeDetRepo.save(detalle);
 			}
 		} catch (ParseException e) {
@@ -274,8 +282,15 @@ public class ProcesamientosServiceImpl implements ProcesamientosService {
 				reqDetEdit.setId(reqDet.getId());
 				reqDetEdit.setPlaceCode(reqDet.getPlaceCode());
 				reqDetEdit.setCollectionDate(calendarToString(reqDet.getCollectionDate()));
-				reqDetEdit.setProcessingResults(reqDet.getProcessingResults());
-				reqDetEdit.setObservationResults(reqDet.getObservationResults());
+				reqDetEdit.setProcessingResults01(reqDet.getResultProcess01());
+				reqDetEdit.setProcessingResults02(reqDet.getResultProcess02());
+				reqDetEdit.setProcessingResults03(reqDet.getResultProcess03());
+				reqDetEdit.setObservationResults01(reqDet.getObservationProcess01());
+				reqDetEdit.setObservationResults02(reqDet.getObservationProcess02());
+				reqDetEdit.setObservationResults03(reqDet.getObservationProcess03());
+				if(reqDet.getDateProcess01() != null) reqDetEdit.setDateResults01(calendarToString(reqDet.getDateProcess01())); else  reqDetEdit.setDateResults01(null);
+				if(reqDet.getDateProcess02() != null) reqDetEdit.setDateResults02(calendarToString(reqDet.getDateProcess02())); else  reqDetEdit.setDateResults02(null);
+				if(reqDet.getDateProcess03() != null) reqDetEdit.setDateResults03(calendarToString(reqDet.getDateProcess03())); else  reqDetEdit.setDateResults03(null);
 				reqResDetEdit.add(reqDetEdit);
 			}
 			reqResEdit.setDetails(reqResDetEdit);
@@ -325,7 +340,7 @@ public class ProcesamientosServiceImpl implements ProcesamientosService {
 			doc.setDocument(requerimiento.getEvidence());
 			docRepo.save(doc);
 			return findAll();
-		}else {
+		} else {
 			doc = new DocumentosEvidencia();
 			DocumentosEvidencia docFirst = docRepo.findFirstByOrderByIdDesc();
 			if (docFirst != null)
@@ -339,7 +354,7 @@ public class ProcesamientosServiceImpl implements ProcesamientosService {
 			doc.setCreatedBy(requerimiento.getUserId());
 			docRepo.save(doc);
 			return findAll();
-		}	
+		}
 	}
 
 }

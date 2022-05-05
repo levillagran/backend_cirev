@@ -8,9 +8,10 @@ import lombok.Data;
 public class SecuenciacionRequest {
 
 	private Integer id;
-	private String shippingReceptionDate;
-	private Boolean isShipping;
-	private String observationSequence;
+	private String shippingDate;
+	private String receptionDate;
+	private String observationShipping;
+	private String observationReception;
 	
 	private String processingUsersId;
 	

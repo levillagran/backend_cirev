@@ -6,7 +6,7 @@
 	<subDataset name="Dataset1" uuid="823fdd45-ff11-47ee-a28a-fcb8bf840949"/>
 	<parameter name="requirementId" class="java.lang.Integer"/>
 	<queryString language="SQL">
-		<![CDATA[SELECT to_char(r.number,'0000') number, to_char(r.report_date,'DD/MM/YYYY') reportDate, 
+		<![CDATA[SELECT r.code number, to_char(r.report_date,'DD/MM/YYYY') reportDate, 
 					su.is_internal internal, ap.name nameProyect, a.name nameAnalysis, 
 					r.type_sample_id typeSample, r.number_samples numSamples, r.number_processed_samples numProcess,
 					r.report_results results, r.observations_report observ,
@@ -199,7 +199,7 @@
 				</graphicElement>
 			</line>
 			<line>
-				<reportElement x="220" y="1" width="1" height="31" uuid="9b0f2989-5d5f-4a94-9e58-6429649f5152"/>
+				<reportElement x="192" y="1" width="1" height="31" uuid="9b0f2989-5d5f-4a94-9e58-6429649f5152"/>
 			</line>
 			<line>
 				<reportElement x="370" y="1" width="1" height="31" uuid="5d0312e4-8bff-4bcd-b828-af68fd9f6996"/>
@@ -225,7 +225,7 @@
 				<text><![CDATA[Nombre del Área Técnica Solicitante/ Proyecto de Investigación: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="224" y="1" width="100" height="30" uuid="0355e4e8-3488-4e63-be73-11709cb32f1c"/>
+				<reportElement x="193" y="1" width="106" height="30" uuid="0355e4e8-3488-4e63-be73-11709cb32f1c"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
@@ -398,7 +398,7 @@ Externo:]]></text>
 				<text><![CDATA[Observaciones:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="320" y="4" width="49" height="25" uuid="5e30b251-faf9-4ae8-93eb-144c7ecefc28"/>
+				<reportElement x="299" y="4" width="70" height="25" uuid="5e30b251-faf9-4ae8-93eb-144c7ecefc28"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{number}]]></textFieldExpression>
 			</textField>
@@ -462,7 +462,7 @@ Externo:]]></text>
 				<textFieldExpression><![CDATA[$F{observ}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="120" y="0" width="101" height="31" uuid="9c9d847e-9994-43f2-b137-ddcbaf5d9f97"/>
+				<reportElement x="103" y="1" width="87" height="30" uuid="9c9d847e-9994-43f2-b137-ddcbaf5d9f97"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{reportDate}]]></textFieldExpression>
 			</textField>

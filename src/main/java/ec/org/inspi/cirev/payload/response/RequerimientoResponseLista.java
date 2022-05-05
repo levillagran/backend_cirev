@@ -6,6 +6,7 @@ import lombok.Data;
 public class RequerimientoResponseLista {
 
 	private Integer id;
+	private String status;
 	private String number;
 	private String entryDate;
 	

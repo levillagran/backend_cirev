@@ -49,7 +49,6 @@ public class MenuServiceImpl implements MenuService {
 				}
 			}
 		}
-		
 		return listMenu;
 	}
 

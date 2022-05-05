@@ -6,7 +6,7 @@
 	<subDataset name="Dataset1" uuid="823fdd45-ff11-47ee-a28a-fcb8bf840949"/>
 	<parameter name="requirementId" class="java.lang.Integer"/>
 	<queryString language="SQL">
-		<![CDATA[SELECT to_char(r.entry_date,'DD/MM/YYYY') entryDate, to_char(r.number,'0000') number, su.is_internal internal,
+		<![CDATA[SELECT to_char(r.entry_date,'DD/MM/YYYY') entryDate, r.code number, su.is_internal internal,
 					ap.name nameProyect, a.name nameAnalysis, s.name nameSpecific, r.is_sequenced sequenced, r.number_samples numSamples,
 					r.type_sample_id typeSample,r.number_accepted_samples numAccepted, r.number_unaccepted_samples numUnAccepted,
 					r.observation_requirement obsReq, r.observation_entry obsEntry, (su.prefix || ' ' || su.name || ' ' || su.lastname || ' ' || su.suffix) usuario,
@@ -200,7 +200,7 @@
 				</graphicElement>
 			</line>
 			<line>
-				<reportElement x="220" y="1" width="1" height="31" uuid="9b0f2989-5d5f-4a94-9e58-6429649f5152"/>
+				<reportElement x="190" y="0" width="1" height="31" uuid="9b0f2989-5d5f-4a94-9e58-6429649f5152"/>
 			</line>
 			<line>
 				<reportElement x="370" y="1" width="1" height="31" uuid="5d0312e4-8bff-4bcd-b828-af68fd9f6996"/>
@@ -226,7 +226,7 @@
 				<text><![CDATA[Nombre del Área Técnica Solicitante/ Proyecto de Investigación: ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="224" y="1" width="100" height="30" uuid="0355e4e8-3488-4e63-be73-11709cb32f1c"/>
+				<reportElement x="194" y="1" width="100" height="30" uuid="0355e4e8-3488-4e63-be73-11709cb32f1c"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="11" isBold="true"/>
 				</textElement>
@@ -487,7 +487,7 @@ Externo:]]></text>
 				<text><![CDATA[Observaciones del requerimiento:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="320" y="4" width="49" height="25" uuid="5e30b251-faf9-4ae8-93eb-144c7ecefc28"/>
+				<reportElement x="294" y="4" width="75" height="25" uuid="5e30b251-faf9-4ae8-93eb-144c7ecefc28"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{number}]]></textFieldExpression>
 			</textField>
@@ -575,7 +575,7 @@ Externo:]]></text>
 				<textFieldExpression><![CDATA[$F{obsReq}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="120" y="0" width="101" height="31" uuid="9c9d847e-9994-43f2-b137-ddcbaf5d9f97"/>
+				<reportElement x="108" y="0" width="82" height="31" uuid="9c9d847e-9994-43f2-b137-ddcbaf5d9f97"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$F{entryDate}]]></textFieldExpression>
 			</textField>

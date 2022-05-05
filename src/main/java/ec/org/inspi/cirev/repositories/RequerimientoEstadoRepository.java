@@ -11,4 +11,5 @@ import ec.org.inspi.cirev.models.RequerimientoEstado;
 public interface RequerimientoEstadoRepository extends PagingAndSortingRepository<RequerimientoEstado, Integer>{
 	RequerimientoEstado findFirstByOrderByIdDesc();
 	List<RequerimientoEstado> findAllByStatusId(Integer estadoId);
+	RequerimientoEstado findByRequirementId(Integer requerimientoId);
 }

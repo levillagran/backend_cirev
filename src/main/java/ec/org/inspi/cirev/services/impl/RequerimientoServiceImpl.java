@@ -23,6 +23,7 @@ import ec.org.inspi.cirev.models.Analisis;
 import ec.org.inspi.cirev.models.Canton;
 import ec.org.inspi.cirev.models.DocumentosEvidencia;
 import ec.org.inspi.cirev.models.Especificacion;
+import ec.org.inspi.cirev.models.Estado;
 import ec.org.inspi.cirev.models.Genero;
 import ec.org.inspi.cirev.models.Parroquia;
 import ec.org.inspi.cirev.models.Provincia;
@@ -46,6 +47,7 @@ import ec.org.inspi.cirev.repositories.AnalisisRepository;
 import ec.org.inspi.cirev.repositories.CantonRepository;
 import ec.org.inspi.cirev.repositories.DocumentoEvidenciaRepository;
 import ec.org.inspi.cirev.repositories.EspecificacionRepository;
+import ec.org.inspi.cirev.repositories.EstadoRepository;
 import ec.org.inspi.cirev.repositories.GeneroRepository;
 import ec.org.inspi.cirev.repositories.ParroquiaRepository;
 import ec.org.inspi.cirev.repositories.ProvinciaRepository;
@@ -108,6 +110,8 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 	private DocumentoEvidenciaRepository docRepo;
 	@Autowired
 	private RequerimientoEstadoRepository reqEstaRep;
+	@Autowired
+	private EstadoRepository estaRep;
 
 	@Override
 	public List<RequerimientoResponseLista> findAll() {
@@ -118,6 +122,9 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 			for (Requerimiento requerimiento : requerimientos) {
 				requeRes = new RequerimientoResponseLista();
 				requeRes.setId(requerimiento.getId());
+				RequerimientoEstado reqEs = reqEstaRep.findByRequirementId(requerimiento.getId());
+				Estado est = estaRep.findById(reqEs.getStatusId()).get();
+				requeRes.setStatus(est.getName());
 				requeRes.setNumber(requerimiento.getCode());
 				requeRes.setEntryDate(calendarToString(requerimiento.getEntryDate()));
 				ProyectoArea pa = proyectoRepo.findById(requerimiento.getAreaProjectId()).get();

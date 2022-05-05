@@ -8,7 +8,6 @@ import lombok.Data;
 public class ProcesamientoRequest {
 
 	private Integer id;
-	private String processingDate;
 	private Integer techniqueId;
 	private Integer kitReagentId;
 	
