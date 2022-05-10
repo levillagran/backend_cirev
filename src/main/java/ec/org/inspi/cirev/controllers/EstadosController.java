@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ec.org.inspi.cirev.payload.request.EstadoRequest;
+import ec.org.inspi.cirev.payload.request.EstadoValidadorRequest;
 import ec.org.inspi.cirev.payload.response.RequerimientoResponseLista;
 import ec.org.inspi.cirev.services.EstadoService;
 
@@ -23,5 +24,10 @@ public class EstadosController {
 	@PostMapping(value = "/changeStatus")
 	public List<RequerimientoResponseLista> changeStatus(@RequestBody EstadoRequest requerimiento) {
 		return estadoService.changeStatus(requerimiento);
+	}
+	
+	@PostMapping(value = "/changeStatusValidator")
+	public List<RequerimientoResponseLista> changeStatusVal(@RequestBody EstadoValidadorRequest requerimiento) {
+		return estadoService.changeStatusValidator(requerimiento);
 	}
 }

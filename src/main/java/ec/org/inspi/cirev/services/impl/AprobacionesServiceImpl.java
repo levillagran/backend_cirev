@@ -3,67 +3,41 @@ package ec.org.inspi.cirev.services.impl;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 
-import ec.org.inspi.cirev.models.Almacenamiento;
 import ec.org.inspi.cirev.models.Analisis;
-import ec.org.inspi.cirev.models.Canton;
-import ec.org.inspi.cirev.models.DocumentosEvidencia;
 import ec.org.inspi.cirev.models.Especificacion;
-import ec.org.inspi.cirev.models.Genero;
-import ec.org.inspi.cirev.models.Parroquia;
-import ec.org.inspi.cirev.models.Provincia;
 import ec.org.inspi.cirev.models.ProyectoArea;
+import ec.org.inspi.cirev.models.Reactivo;
 import ec.org.inspi.cirev.models.Requerimiento;
 import ec.org.inspi.cirev.models.RequerimientoDetalle;
 import ec.org.inspi.cirev.models.RequerimientoEstado;
-import ec.org.inspi.cirev.models.Taxonomia;
+import ec.org.inspi.cirev.models.Tecnica;
 import ec.org.inspi.cirev.models.TipoMuestra;
 import ec.org.inspi.cirev.models.UsuarioFirmante;
-import ec.org.inspi.cirev.payload.request.RequerimientoDetallesRequest;
-import ec.org.inspi.cirev.payload.request.RequerimientoRequest;
-import ec.org.inspi.cirev.payload.request.ResultadoRequest;
-import ec.org.inspi.cirev.payload.request.UploadRequest;
 import ec.org.inspi.cirev.payload.response.AprobacionDetallesResponseEditar;
-import ec.org.inspi.cirev.payload.response.RequerimientoDetallesResponseEditar;
-import ec.org.inspi.cirev.payload.response.RequerimientoResponseEditar;
+import ec.org.inspi.cirev.payload.response.AprobacionResponseEditar;
 import ec.org.inspi.cirev.payload.response.RequerimientoResponseLista;
-import ec.org.inspi.cirev.payload.response.ResultadoDetallesResponseEditar;
-import ec.org.inspi.cirev.payload.response.ResultadoResponseEditar;
-import ec.org.inspi.cirev.repositories.AlmacenamientoRepository;
 import ec.org.inspi.cirev.repositories.AnalisisRepository;
-import ec.org.inspi.cirev.repositories.CantonRepository;
 import ec.org.inspi.cirev.repositories.DocumentoEvidenciaRepository;
 import ec.org.inspi.cirev.repositories.EspecificacionRepository;
-import ec.org.inspi.cirev.repositories.GeneroRepository;
-import ec.org.inspi.cirev.repositories.ParroquiaRepository;
-import ec.org.inspi.cirev.repositories.ProvinciaRepository;
 import ec.org.inspi.cirev.repositories.ProyectoAreaRepository;
+import ec.org.inspi.cirev.repositories.ReactivoRepository;
 import ec.org.inspi.cirev.repositories.RequerimientoDetalleRepository;
 import ec.org.inspi.cirev.repositories.RequerimientoEstadoRepository;
 import ec.org.inspi.cirev.repositories.RequerimientoRepository;
-import ec.org.inspi.cirev.repositories.TaxonomiaRepository;
+import ec.org.inspi.cirev.repositories.TecnicaRepository;
 import ec.org.inspi.cirev.repositories.TipoMuestraRepository;
 import ec.org.inspi.cirev.repositories.UsuarioFirmanteRepository;
-import ec.org.inspi.cirev.services.ResultadoService;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
+import ec.org.inspi.cirev.services.AprobacionesService;
 
-@Service("resultadoService")
-public class ResultadoServiceImpl implements ResultadoService {
+@Service("aprobacionesService")
+public class AprobacionesServiceImpl implements AprobacionesService {
 
 	@Autowired
 	private RequerimientoRepository requeRepo;
@@ -80,33 +54,32 @@ public class ResultadoServiceImpl implements ResultadoService {
 	@Autowired
 	private UsuarioFirmanteRepository ufRepo;
 	@Autowired
-	private TaxonomiaRepository taxRepo;
-	@Autowired
-	private ProvinciaRepository provRepo;
-	@Autowired
-	private CantonRepository cantRepo;
-	@Autowired
-	private ParroquiaRepository prarrRepo;
-	@Autowired
-	private GeneroRepository genRepo;
-	@Autowired
-	private AlmacenamientoRepository alRepo;
-	@Autowired
-	private DataSource dataSource;
-	@Autowired
 	private DocumentoEvidenciaRepository docRepo;
+	@Autowired
+	private TecnicaRepository tecRepo;
+	@Autowired
+	private ReactivoRepository reacRepo;
 	@Autowired
 	private RequerimientoEstadoRepository reqEstaRep;
 
 	@Override
-	public List<RequerimientoResponseLista> findAll() {
+	public List<RequerimientoResponseLista> findAll(Integer userId) {
 		try {
-			List<RequerimientoEstado> ids = reqEstaRep.findAllByStatusId(4);
+			List<RequerimientoEstado> ids = reqEstaRep.findAllByStatusId(3);
 			List<Requerimiento> requerimientos = new ArrayList<>();
+			boolean bandera = false;
 			for (RequerimientoEstado id : ids) {
+				bandera = false;
 				Requerimiento req = requeRepo.findById(id.getRequirementId()).get();
-				if (req != null)
-					requerimientos.add(req);
+				if (req != null && req.getProcessingUsersId() != null) {
+					String[] usersProcess = req.getProcessingUsersId().split(",");
+					for (String userProcessId : usersProcess) {
+						if (Integer.parseInt(userProcessId) != userId || usersProcess.length <= 0) {
+							bandera = true;
+						}
+					}
+				}
+				if (bandera) requerimientos.add(req);
 			}
 			List<RequerimientoResponseLista> requeResL = new ArrayList<>();
 			RequerimientoResponseLista requeRes;
@@ -171,68 +144,68 @@ public class ResultadoServiceImpl implements ResultadoService {
 	}
 
 	@Override
-	public List<RequerimientoResponseLista> save(ResultadoRequest requerimientoRequest) {
-		try {
-			Calendar fechaActual = Calendar.getInstance();
-			Requerimiento requerimiento = new Requerimiento();
-			if (requerimientoRequest.getId() != null) {
-				requerimiento = requeRepo.findById(requerimientoRequest.getId()).get();
-				requerimiento.setModifiedBy(requerimientoRequest.getReportByUserId());
-				requerimiento.setModifiedAt(fechaActual);
-				requerimiento.setReportDate(stringToCalendar(requerimientoRequest.getReportDate()));
-				requerimiento.setReportResults(requerimientoRequest.getReportResults());
-				requerimiento.setObservationsReport(requerimientoRequest.getObservationsReport());
-				requeRepo.save(requerimiento);
-			}
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return findAll();
-	}
-
-	@Override
-	public ResultadoResponseEditar findById(Integer requerimientoId) {
-		ResultadoResponseEditar reqResEdit = new ResultadoResponseEditar();
-		List<ResultadoDetallesResponseEditar> reqResDetEdit = new ArrayList<>();
-		ResultadoDetallesResponseEditar reqDetEdit;
+	public AprobacionResponseEditar findById(Integer requerimientoId) {
+		AprobacionResponseEditar reqResEdit = new AprobacionResponseEditar();
+		List<AprobacionDetallesResponseEditar> reqResDetEdit = new ArrayList<>();
+		AprobacionDetallesResponseEditar reqDetEdit;
 		Requerimiento req = requeRepo.findById(requerimientoId).get();
 		List<RequerimientoDetalle> reqDets = requeDetRepo.findAllByRequirementId(requerimientoId);
 		reqResEdit.setId(req.getId());
-		reqResEdit.setReportDate(req.getReportDate());
+		reqResEdit.setEntryDate(req.getEntryDate());
 		reqResEdit.setAreaProjectId(req.getAreaProjectId());
 		ProyectoArea pa = proyectoRepo.findById(req.getAreaProjectId()).get();
 		reqResEdit.setAreaProject(pa.getName());
 		reqResEdit.setAnalysisId(req.getAnalysisId());
 		Analisis an = anaRepo.findById(req.getAnalysisId()).get();
 		reqResEdit.setAnalysis(an.getName());
+		reqResEdit.setSpecificationId(req.getSpecificationId());
+		Especificacion es = esRepoy.findById(req.getSpecificationId()).get();
+		reqResEdit.setSpecification(es.getName());
 		reqResEdit.setIsSequenced(req.getIsSequenced());
+		if (req.getShippingDate() != null)
+			reqResEdit.setShippingDate(req.getShippingDate());
+		if (req.getReceptionDate() != null)
+			reqResEdit.setReceptionDate(req.getReceptionDate());
+		if (req.getObservationShipping() != null)
+			reqResEdit.setObservationShipping(req.getObservationShipping());
+		if (req.getObservationReception() != null)
+			reqResEdit.setObservationReception(req.getObservationReception());
 		TipoMuestra tm = tmRepo.findById(req.getTypeSampleId()).get();
 		reqResEdit.setTypeSample(tm.getName());
 		reqResEdit.setTypeSampleId(req.getTypeSampleId());
-		reqResEdit.setNumberSamples(req.getNumberSamples());
-		reqResEdit.setNumberProcessedSamples(req.getNumberProcessedSamples());
-		reqResEdit.setObservationsReport(req.getObservationsReport());
-		reqResEdit.setReportResults(req.getReportResults());
-
+		if (req.getTechniqueId() != null) {
+			reqResEdit.setTechniqueId(req.getTechniqueId());
+			Tecnica tec = tecRepo.findById(req.getTechniqueId()).get();
+			reqResEdit.setTechnique(tec.getName());
+		}
+		if (req.getKitReagentId() != null) {
+			reqResEdit.setKitReagentId(req.getKitReagentId());
+			Reactivo reac = reacRepo.findById(req.getKitReagentId()).get();
+			reqResEdit.setKitReagent(reac.getName());
+		}
+		if (req.getProcessingUsersId() != null) {
+			reqResEdit.setProcessingUsersId(req.getProcessingUsersId());
+			String[] usersProcess = req.getProcessingUsersId().split(",");
+			String usersProcessConcat = "";
+			String userProc = "";
+			for (String userId : usersProcess) {
+				if (req.getRequerimentUserId() != null) {
+					UsuarioFirmante uf = ufRepo.findById(Integer.parseInt(userId)).get();
+					userProc = getName("", uf.getName(), uf.getLastname(), "");
+				}
+				usersProcessConcat = usersProcessConcat + userProc;
+			}
+			reqResEdit.setProcessingUsers(usersProcessConcat);
+		}
 		for (RequerimientoDetalle reqDet : reqDets) {
-			reqDetEdit = new ResultadoDetallesResponseEditar();
+			reqDetEdit = new AprobacionDetallesResponseEditar();
 			reqDetEdit.setId(reqDet.getId());
 			reqDetEdit.setPlaceCode(reqDet.getPlaceCode());
 			try {
 				reqDetEdit.setCollectionDate(calendarToString(reqDet.getCollectionDate()));
-				if (reqDet.getDateProcess01() != null)
-					reqDetEdit.setDateResults01(calendarToString(reqDet.getDateProcess01()));
-				else
-					reqDetEdit.setDateResults01(null);
-				if (reqDet.getDateProcess02() != null)
-					reqDetEdit.setDateResults02(calendarToString(reqDet.getDateProcess02()));
-				else
-					reqDetEdit.setDateResults02(null);
-				if (reqDet.getDateProcess03() != null)
-					reqDetEdit.setDateResults03(calendarToString(reqDet.getDateProcess03()));
-				else
-					reqDetEdit.setDateResults03(null);
+				if(reqDet.getDateProcess01() != null) reqDetEdit.setDateResults01(calendarToString(reqDet.getDateProcess01())); else  reqDetEdit.setDateResults01(null);
+				if(reqDet.getDateProcess02() != null) reqDetEdit.setDateResults02(calendarToString(reqDet.getDateProcess02())); else  reqDetEdit.setDateResults02(null);
+				if(reqDet.getDateProcess03() != null) reqDetEdit.setDateResults03(calendarToString(reqDet.getDateProcess03())); else  reqDetEdit.setDateResults03(null);
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
@@ -245,8 +218,7 @@ public class ResultadoServiceImpl implements ResultadoService {
 			reqDetEdit.setPrimer(reqDet.getPrimer());
 			reqDetEdit.setSequence(reqDet.getSequence());
 			reqDetEdit.setConcentration(reqDet.getConcentration());
-			if (reqDet.getIsFasta() != null)
-				reqDetEdit.setIsFasta(reqDet.getIsFasta() ? "Si" : "No");
+			if(reqDet.getIsFasta() != null) reqDetEdit.setIsFasta(reqDet.getIsFasta() ? "Si" : "No");
 			reqDetEdit.setQuality(reqDet.getQuality());
 			reqDetEdit.setIdentity(reqDet.getIdentity());
 			reqDetEdit.setOrganism(reqDet.getOrganism());
@@ -254,62 +226,6 @@ public class ResultadoServiceImpl implements ResultadoService {
 		}
 		reqResEdit.setDetails(reqResDetEdit);
 		return reqResEdit;
-	}
-
-	@Override
-	public String findVoucherById(Integer requerimientoId) {
-		try {
-			DocumentosEvidencia doc = docRepo.findByRequirementIdAndDocumentTypeId(requerimientoId, 1);
-			return doc.getDocument();
-		} catch (Exception e) {
-			return null;
-		}
-	}
-
-	@Override
-	public String createVoucher(Integer requerimientoId) {
-		try {
-			Map<String, Object> parameters = new HashMap<>();
-			parameters.put("requirementId", requerimientoId);
-
-			JasperPrint empReport = JasperFillManager.fillReport(
-					JasperCompileManager.compileReport(
-							ResourceUtils.getFile("classpath:reports/reporte_resultados.jrxml").getAbsolutePath()),
-					parameters // dynamic parameters
-					, dataSource.getConnection());
-
-			byte[] pdf = JasperExportManager.exportReportToPdf(empReport);
-			String pdfBas64 = Base64.getEncoder().encodeToString(pdf);
-			return "data:application/pdf;base64," + pdfBas64;
-
-		} catch (Exception e) {
-			System.out.println(e);
-			return null;
-		}
-	}
-
-	@Override
-	public List<RequerimientoResponseLista> saveComprobante(UploadRequest requerimiento) {
-		DocumentosEvidencia doc = docRepo.findByRequirementIdAndDocumentTypeId(requerimiento.getId(), 1);
-		if (doc != null) {
-			doc.setDocument(requerimiento.getEvidence());
-			docRepo.save(doc);
-			return findAll();
-		} else {
-			doc = new DocumentosEvidencia();
-			DocumentosEvidencia docFirst = docRepo.findFirstByOrderByIdDesc();
-			if (docFirst != null)
-				doc.setId(docFirst.getId() + 1);
-			else
-				doc.setId(1);
-			doc.setRequirementId(requerimiento.getId());
-			doc.setDocument(requerimiento.getEvidence());
-			doc.setDocumentTypeId(1);
-			doc.setCreatedAt(Calendar.getInstance());
-			doc.setCreatedBy(requerimiento.getUserId());
-			docRepo.save(doc);
-			return findAll();
-		}
 	}
 
 }

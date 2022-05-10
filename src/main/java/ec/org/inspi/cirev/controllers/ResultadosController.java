@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ec.org.inspi.cirev.payload.request.RequerimientoRequest;
+import ec.org.inspi.cirev.payload.request.ResultadoRequest;
 import ec.org.inspi.cirev.payload.request.UploadRequest;
 import ec.org.inspi.cirev.payload.response.RequerimientoResponseEditar;
 import ec.org.inspi.cirev.payload.response.RequerimientoResponseLista;
+import ec.org.inspi.cirev.payload.response.ResultadoResponseEditar;
 import ec.org.inspi.cirev.services.RequerimientoService;
 import ec.org.inspi.cirev.services.ResultadoService;
 
@@ -31,12 +33,12 @@ public class ResultadosController {
 	}
 	
 	@PostMapping(value = "/save")
-	public List<RequerimientoResponseLista> saveUsuario(@RequestBody RequerimientoRequest requerimiento) {
+	public List<RequerimientoResponseLista> saveUsuario(@RequestBody ResultadoRequest requerimiento) {
 		return resultadoService.save(requerimiento);
 	}
 	
 	@GetMapping(value = "/findById/{requerimientoId}")
-	public RequerimientoResponseEditar findById(@PathVariable Integer requerimientoId) {
+	public ResultadoResponseEditar findById(@PathVariable Integer requerimientoId) {
 		return resultadoService.findById(requerimientoId);
 	}
 

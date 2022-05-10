@@ -59,9 +59,11 @@ public class Requerimiento {
 	@Column(name = "observation_entry")
 	private String observationEntry;
 	@Column(name = "report_results")
-	private Calendar reportResults;
+	private String reportResults;
 	@Column(name = "observations_report")
 	private String observationsReport;
+	@Column(name = "report_by_user_id")
+	private Integer reportByUserId;
 	@Column(name = "requeriment_user_id")
 	private Integer requerimentUserId;
 	@Column(name = "technique_id")
@@ -72,6 +74,8 @@ public class Requerimiento {
 	private Integer receptionUserId;
 	@Column(name = "processing_users_id")
 	private String processingUsersId;
+	@Column(name = "validator_user_id")
+	private Integer validatorUserId;
 	@Column(name = "approval_user_id")
 	private Integer approvalUserId;
 	@Column(name = "observation_shipping")
