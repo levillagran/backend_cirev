@@ -15,8 +15,8 @@ public class RequerimientoDetallesRequest {
 	private double latitude;
 	private double longitude;
 	private Integer genderId;
-	private boolean isPreprocessed;
-	private boolean isAccepted;
+	private String isPreprocessed;
+	private String isAccepted;
 	private String reazonNoAccepted;
 	private Integer storageId;
 	private Integer numberBox;

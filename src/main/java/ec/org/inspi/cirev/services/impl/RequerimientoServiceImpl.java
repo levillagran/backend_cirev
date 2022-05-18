@@ -225,7 +225,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 			requerimiento.setReceptionUserId(requerimientoRequest.getReceptionUserId());
 			int nA = 0;
 			for (RequerimientoDetallesRequest detalleReq : requerimientoRequest.getDetails()) {
-				if (detalleReq.isAccepted()) {
+				if (detalleReq.getIsAccepted().equals("true")) {
 					nA = nA + 1;
 				}
 			}
@@ -236,45 +236,49 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 			String codeTipe = tmRepo.findFirstById(requerimiento.getTypeSampleId()).getCode();
 			for (RequerimientoDetallesRequest detalleReq : requerimientoRequest.getDetails()) {
 				RequerimientoDetalle detalle = new RequerimientoDetalle();
-				if (detalleReq.getId() != null) {
-					detalle = requeDetRepo.findById(detalleReq.getId()).get();
-					detalle.setModifiedBy(requerimientoRequest.getReceptionUserId());
-					detalle.setModifiedAt(fechaActual);
-				} else {
-					RequerimientoDetalle reqDetId = requeDetRepo.findFirstByOrderByIdDesc();
-					if (reqDetId != null)
-						detalle.setId(reqDetId.getId() + 1);
-					else
-						detalle.setId(1);
-					detalle.setRequirementId(requerimiento.getId());
-					RequerimientoDetalle serial = requeDetRepo.findFirstByOrderBySerialDesc();
-					if (serial != null)
-						detalle.setSerial(serial.getSerial() + 1);
-					else
-						detalle.setSerial(1);
-					detalle.setCode("MOL-" + fechaActual.get(Calendar.YEAR) + "-" + codeTipe + "-"
-							+ String.format("%04d", detalle.getSerial()));
-					detalle.setCreatedBy(requerimientoRequest.getReceptionUserId());
-					detalle.setCreatedAt(fechaActual);
+				if (detalleReq.getPlaceCode().length() > 0 && detalleReq.getCollectionDate().length() > 0) {
+					if (detalleReq.getId() != null) {
+						detalle = requeDetRepo.findById(detalleReq.getId()).get();
+						detalle.setModifiedBy(requerimientoRequest.getReceptionUserId());
+						detalle.setModifiedAt(fechaActual);
+					} else {
+						RequerimientoDetalle reqDetId = requeDetRepo.findFirstByOrderByIdDesc();
+						if (reqDetId != null)
+							detalle.setId(reqDetId.getId() + 1);
+						else
+							detalle.setId(1);
+						detalle.setRequirementId(requerimiento.getId());
+						RequerimientoDetalle serial = requeDetRepo.findFirstByOrderBySerialDesc();
+						if (serial != null)
+							detalle.setSerial(serial.getSerial() + 1);
+						else
+							detalle.setSerial(1);
+						detalle.setCode("MOL-" + fechaActual.get(Calendar.YEAR) + "-" + codeTipe + "-"
+								+ String.format("%04d", detalle.getSerial()));
+						detalle.setCreatedBy(requerimientoRequest.getReceptionUserId());
+						detalle.setCreatedAt(fechaActual);
+					}
+					detalle.setPlaceCode(detalleReq.getPlaceCode());
+					detalle.setCollectionDate(stringToCalendar(detalleReq.getCollectionDate()));
+					detalle.setTaxonomicId(detalleReq.getTaxonomicId());
+					detalle.setGenderId(detalleReq.getGenderId());
+					detalle.setProvinceId(detalleReq.getProvinceId());
+					detalle.setCantonId(detalleReq.getCantonId());
+					detalle.setParishId(detalleReq.getParishId());
+					detalle.setLatitude(detalleReq.getLatitude());
+					detalle.setLongitude(detalleReq.getLongitude());
+					detalle.setPreprocessed(detalleReq.getIsPreprocessed().equals("true")? true: false);
+					detalle.setPlaceCode(detalleReq.getPlaceCode());
+					detalle.setAccepted(detalleReq.getIsAccepted().equals("true")? true: false);
+					detalle.setReasonUnacceptedSamples(detalleReq.getReazonNoAccepted());
+					detalle.setStorageId(detalleReq.getStorageId());
+					detalle.setNumberBox(detalleReq.getNumberBox());
+					detalle.setYearCode(detalleReq.getYearCode());
+					detalle.setObservationSampleDetail(detalleReq.getObservationSampleDetail());
+					
+					requeDetRepo.save(detalle);
 				}
-				detalle.setPlaceCode(detalleReq.getPlaceCode());
-				detalle.setCollectionDate(stringToCalendar(detalleReq.getCollectionDate()));
-				detalle.setTaxonomicId(detalleReq.getTaxonomicId());
-				detalle.setGenderId(detalleReq.getGenderId());
-				detalle.setProvinceId(detalleReq.getProvinceId());
-				detalle.setCantonId(detalleReq.getCantonId());
-				detalle.setParishId(detalleReq.getParishId());
-				detalle.setLatitude(detalleReq.getLatitude());
-				detalle.setLongitude(detalleReq.getLongitude());
-				detalle.setPreprocessed(detalleReq.isPreprocessed());
-				detalle.setPlaceCode(detalleReq.getPlaceCode());
-				detalle.setAccepted(detalleReq.isAccepted());
-				detalle.setReasonUnacceptedSamples(detalleReq.getReazonNoAccepted());
-				detalle.setStorageId(detalleReq.getStorageId());
-				detalle.setNumberBox(detalleReq.getNumberBox());
-				detalle.setYearCode(detalleReq.getYearCode());
-				detalle.setObservationSampleDetail(detalleReq.getObservationSampleDetail());
-				requeDetRepo.save(detalle);
+				
 			}
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
@@ -324,41 +328,53 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 				reqDetEdit.setId(reqDet.getId());
 				reqDetEdit.setPlaceCode(reqDet.getPlaceCode());
 				reqDetEdit.setCollectionDate(calendarToString(reqDet.getCollectionDate()));
-				reqDetEdit.setTaxonomicId(reqDet.getTaxonomicId());
-				Taxonomia tax = taxRepo.findById(reqDet.getTaxonomicId()).get();
-				reqDetEdit.setTaxonomic(tax.getName());
-				reqDetEdit.setProvinceId(reqDet.getProvinceId());
-				Provincia prov = provRepo.findById(reqDet.getProvinceId()).get();
-				reqDetEdit.setProvince(prov.getName());
-				reqDetEdit.setCantonId(reqDet.getCantonId());
-				Canton cant = cantRepo.findById(reqDet.getCantonId()).get();
-				reqDetEdit.setCanton(cant.getName());
-				reqDetEdit.setParishId(reqDet.getParishId());
-				Parroquia parr = prarrRepo.findById(reqDet.getParishId()).get();
-				reqDetEdit.setParish(parr.getName());
+				if (reqDet.getTaxonomicId() != null) {
+					reqDetEdit.setTaxonomicId(reqDet.getTaxonomicId());
+					Taxonomia tax = taxRepo.findById(reqDet.getTaxonomicId()).get();
+					reqDetEdit.setTaxonomic(tax.getName());
+				}
+				if (reqDet.getProvinceId() != null) {
+					reqDetEdit.setProvinceId(reqDet.getProvinceId());
+					Provincia prov = provRepo.findById(reqDet.getProvinceId()).get();
+					reqDetEdit.setProvince(prov.getName());
+				}
+				if (reqDet.getCantonId() != null) {
+					reqDetEdit.setCantonId(reqDet.getCantonId());
+					Canton cant = cantRepo.findById(reqDet.getCantonId()).get();
+					reqDetEdit.setCanton(cant.getName());
+				}
+				if (reqDet.getParishId() != null) {
+					reqDetEdit.setParishId(reqDet.getParishId());
+					Parroquia parr = prarrRepo.findById(reqDet.getParishId()).get();
+					reqDetEdit.setParish(parr.getName());
+				}
 				reqDetEdit.setLatitude(reqDet.getLatitude());
 				reqDetEdit.setLongitude(reqDet.getLongitude());
-				reqDetEdit.setGenderId(reqDet.getGenderId());
-				Genero gen = genRepo.findById(reqDet.getGenderId()).get();
-				reqDetEdit.setGender(gen.getName());
+				if (reqDet.getGenderId() != null) {
+					reqDetEdit.setGenderId(reqDet.getGenderId());
+					Genero gen = genRepo.findById(reqDet.getGenderId()).get();
+					reqDetEdit.setGender(gen.getName());
+				}
 				if (reqDet.isPreprocessed())
-					reqDetEdit.setIsPreprocessed("Sí");
+					reqDetEdit.setIsPreprocessed("Si");
 				else
 					reqDetEdit.setIsPreprocessed("No");
 				if (reqDet.isAccepted())
-					reqDetEdit.setIsAccepted("Sí");
+					reqDetEdit.setIsAccepted("Si");
 				else
 					reqDetEdit.setIsAccepted("No");
 				reqDetEdit.setPreprocessedId(reqDet.isPreprocessed());
 				reqDetEdit.setAcceptedId(reqDet.isAccepted());
 				reqDetEdit.setReazonNoAccepted(reqDet.getReasonUnacceptedSamples());
-				reqDetEdit.setStorageId(reqDet.getStorageId());
-				Almacenamiento al = alRepo.findById(reqDet.getStorageId()).get();
-				if (al.getText01().length() > 0 && al.getText02().length() > 0 && al.getText03() == null) {
-					reqDetEdit.setStorage(al.getText01() + " " + reqDet.getNumberBox() + al.getText02());
-				} else if (al.getText01().length() > 0 && al.getText02().length() > 0 && al.getText03().length() > 0) {
-					reqDetEdit.setStorage(al.getText01() + " " + reqDet.getNumberBox() + al.getText02() + " "
-							+ reqDet.getYearCode() + al.getText03());
+				if (reqDet.getStorageId() != null) {
+					reqDetEdit.setStorageId(reqDet.getStorageId());
+					Almacenamiento al = alRepo.findById(reqDet.getStorageId()).get();
+					if (al.getText01().length() > 0 && al.getText02().length() > 0 && al.getText03() == null) {
+						reqDetEdit.setStorage(al.getText01() + " " + reqDet.getNumberBox() + al.getText02());
+					} else if (al.getText01().length() > 0 && al.getText02().length() > 0 && al.getText03().length() > 0) {
+						reqDetEdit.setStorage(al.getText01() + " " + reqDet.getNumberBox() + al.getText02() + " "
+								+ reqDet.getYearCode() + al.getText03());
+					}
 				}
 				reqDetEdit.setBox(reqDet.getNumberBox());
 				reqDetEdit.setYear(reqDet.getYearCode());
