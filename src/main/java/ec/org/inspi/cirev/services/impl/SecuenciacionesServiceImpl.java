@@ -283,11 +283,10 @@ public class SecuenciacionesServiceImpl implements SecuenciacionesService {
 			reqDetEdit = new SecuenciacionDetallesResponseEditar();
 			reqDetEdit.setId(reqDet.getId());
 			reqDetEdit.setPlaceCode(reqDet.getPlaceCode());
-			;
 			reqDetEdit.setPrimer(reqDet.getPrimer());
 			reqDetEdit.setSequence(reqDet.getSequence());
 			reqDetEdit.setConcentration(reqDet.getConcentration());
-			reqDetEdit.setIsFasta(reqDet.getIsFasta() ? "Si" : "No");
+			reqDetEdit.setIsFasta(reqDet.getIsFasta() != null && reqDet.getIsFasta() ? "Si" : "No");
 			reqDetEdit.setQuality(reqDet.getQuality());
 			reqDetEdit.setIdentity(reqDet.getIdentity());
 			reqDetEdit.setOrganism(reqDet.getOrganism());

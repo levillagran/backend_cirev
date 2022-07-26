@@ -18,7 +18,7 @@ import javax.persistence.Table;
 
 @Data
 @Entity
-@Table(name = "menus_items")
+@Table(name = "menus_items", schema = "molecular")
 public class Menu {
 	
 	@Id

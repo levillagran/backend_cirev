@@ -51,7 +51,6 @@ public class RequerimientosController {
 	
 	@PostMapping(value = "/comprobanteSave")
 	public List<RequerimientoResponseLista> saveComprobante(@RequestBody UploadRequest uploadRequest) {
-		System.out.println(uploadRequest.getId());
 		return requerimientoService.saveComprobante(uploadRequest);
 	}
 	

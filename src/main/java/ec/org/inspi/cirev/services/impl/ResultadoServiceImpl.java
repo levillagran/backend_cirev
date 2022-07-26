@@ -259,7 +259,7 @@ public class ResultadoServiceImpl implements ResultadoService {
 	@Override
 	public String findVoucherById(Integer requerimientoId) {
 		try {
-			DocumentosEvidencia doc = docRepo.findByRequirementIdAndDocumentTypeId(requerimientoId, 1);
+			DocumentosEvidencia doc = docRepo.findByRequirementIdAndDocumentTypeId(requerimientoId, 2);
 			return doc.getDocument();
 		} catch (Exception e) {
 			return null;
@@ -290,7 +290,7 @@ public class ResultadoServiceImpl implements ResultadoService {
 
 	@Override
 	public List<RequerimientoResponseLista> saveComprobante(UploadRequest requerimiento) {
-		DocumentosEvidencia doc = docRepo.findByRequirementIdAndDocumentTypeId(requerimiento.getId(), 1);
+		DocumentosEvidencia doc = docRepo.findByRequirementIdAndDocumentTypeId(requerimiento.getId(), 2);
 		if (doc != null) {
 			doc.setDocument(requerimiento.getEvidence());
 			docRepo.save(doc);
@@ -304,7 +304,7 @@ public class ResultadoServiceImpl implements ResultadoService {
 				doc.setId(1);
 			doc.setRequirementId(requerimiento.getId());
 			doc.setDocument(requerimiento.getEvidence());
-			doc.setDocumentTypeId(1);
+			doc.setDocumentTypeId(2);
 			doc.setCreatedAt(Calendar.getInstance());
 			doc.setCreatedBy(requerimiento.getUserId());
 			docRepo.save(doc);

@@ -19,6 +19,7 @@ import ec.org.inspi.cirev.models.RequerimientoDetalle;
 import ec.org.inspi.cirev.models.RequerimientoEstado;
 import ec.org.inspi.cirev.models.Tecnica;
 import ec.org.inspi.cirev.models.TipoMuestra;
+import ec.org.inspi.cirev.models.User;
 import ec.org.inspi.cirev.models.UsuarioFirmante;
 import ec.org.inspi.cirev.payload.response.AprobacionDetallesResponseEditar;
 import ec.org.inspi.cirev.payload.response.AprobacionResponseEditar;
@@ -33,6 +34,7 @@ import ec.org.inspi.cirev.repositories.RequerimientoEstadoRepository;
 import ec.org.inspi.cirev.repositories.RequerimientoRepository;
 import ec.org.inspi.cirev.repositories.TecnicaRepository;
 import ec.org.inspi.cirev.repositories.TipoMuestraRepository;
+import ec.org.inspi.cirev.repositories.UserRepository;
 import ec.org.inspi.cirev.repositories.UsuarioFirmanteRepository;
 import ec.org.inspi.cirev.services.AprobacionesService;
 
@@ -53,6 +55,8 @@ public class AprobacionesServiceImpl implements AprobacionesService {
 	private EspecificacionRepository esRepoy;
 	@Autowired
 	private UsuarioFirmanteRepository ufRepo;
+	@Autowired
+	private UserRepository uRepo;
 	@Autowired
 	private DocumentoEvidenciaRepository docRepo;
 	@Autowired
@@ -102,8 +106,8 @@ public class AprobacionesServiceImpl implements AprobacionesService {
 							getName(uf.getPrefix(), uf.getName(), uf.getLastname(), uf.getSuffix()));
 				}
 				if (requerimiento.getReceptionUserId() != null) {
-					UsuarioFirmante uf = ufRepo.findById(requerimiento.getReceptionUserId()).get();
-					requeRes.setReceptionUser(getName(uf.getPrefix(), uf.getName(), uf.getLastname(), uf.getSuffix()));
+					User uf = uRepo.findById(requerimiento.getReceptionUserId());
+					requeRes.setReceptionUser(getName("", uf.getName(), uf.getLastname(), ""));
 				}
 				requeRes.setEvidence(
 						docRepo.findByRequirementIdAndDocumentTypeId(requerimiento.getId(), 1) != null ? true : false);
@@ -173,16 +177,36 @@ public class AprobacionesServiceImpl implements AprobacionesService {
 		TipoMuestra tm = tmRepo.findById(req.getTypeSampleId()).get();
 		reqResEdit.setTypeSample(tm.getName());
 		reqResEdit.setTypeSampleId(req.getTypeSampleId());
-		if (req.getTechniqueId() != null) {
-			reqResEdit.setTechniqueId(req.getTechniqueId());
-			Tecnica tec = tecRepo.findById(req.getTechniqueId()).get();
-			reqResEdit.setTechnique(tec.getName());
+		if (req.getTechnique01Id() != null) {
+			reqResEdit.setTechnique01Id(req.getTechnique01Id());
+			Tecnica tec = tecRepo.findById(req.getTechnique01Id()).get();
+			reqResEdit.setTechnique01(tec.getName());
 		}
-		if (req.getKitReagentId() != null) {
-			reqResEdit.setKitReagentId(req.getKitReagentId());
-			Reactivo reac = reacRepo.findById(req.getKitReagentId()).get();
-			reqResEdit.setKitReagent(reac.getName());
+		if (req.getKitReagent01Id() != null) {
+			reqResEdit.setKitReagent01Id(req.getKitReagent01Id());
+			Reactivo reac = reacRepo.findById(req.getKitReagent01Id()).get();
+			reqResEdit.setKitReagent01(reac.getName());
 		}
+		if (req.getTechnique02Id() != null) {
+            reqResEdit.setTechnique02Id(req.getTechnique02Id());
+            Tecnica tec = tecRepo.findById(req.getTechnique02Id()).get();
+            reqResEdit.setTechnique02(tec.getName());
+        }
+        if (req.getKitReagent02Id() != null) {
+            reqResEdit.setKitReagent02Id(req.getKitReagent02Id());
+            Reactivo reac = reacRepo.findById(req.getKitReagent02Id()).get();
+            reqResEdit.setKitReagent02(reac.getName());
+        }
+        if (req.getTechnique03Id() != null) {
+            reqResEdit.setTechnique03Id(req.getTechnique03Id());
+            Tecnica tec = tecRepo.findById(req.getTechnique03Id()).get();
+            reqResEdit.setTechnique03(tec.getName());
+        }
+        if (req.getKitReagent03Id() != null) {
+            reqResEdit.setKitReagent03Id(req.getKitReagent03Id());
+            Reactivo reac = reacRepo.findById(req.getKitReagent03Id()).get();
+            reqResEdit.setKitReagent03(reac.getName());
+        }
 		if (req.getProcessingUsersId() != null) {
 			reqResEdit.setProcessingUsersId(req.getProcessingUsersId());
 			String[] usersProcess = req.getProcessingUsersId().split(",");

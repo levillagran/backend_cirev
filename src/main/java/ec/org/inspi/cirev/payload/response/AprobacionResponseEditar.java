@@ -23,10 +23,18 @@ public class AprobacionResponseEditar {
 	private String specification;
 	private Integer specificationId;
 	
-	private String technique;
-	private Integer techniqueId;
-	private String kitReagent;
-	private Integer kitReagentId;
+	private String technique01;
+	private Integer technique01Id;
+	private String kitReagent01;
+	private Integer kitReagent01Id;
+	private String technique02;
+	private Integer technique02Id;
+	private String kitReagent02;
+	private Integer kitReagent02Id;
+	private String technique03;
+	private Integer technique03Id;
+	private String kitReagent03;
+	private Integer kitReagent03Id;
 	
 	private String observationShipping;
 	private String observationReception;

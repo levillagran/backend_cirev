@@ -35,6 +35,7 @@ import ec.org.inspi.cirev.models.RequerimientoEstado;
 import ec.org.inspi.cirev.models.Taxonomia;
 import ec.org.inspi.cirev.models.Tecnica;
 import ec.org.inspi.cirev.models.TipoMuestra;
+import ec.org.inspi.cirev.models.User;
 import ec.org.inspi.cirev.models.UsuarioFirmante;
 import ec.org.inspi.cirev.payload.request.RequerimientoDetallesRequest;
 import ec.org.inspi.cirev.payload.request.RequerimientoRequest;
@@ -59,6 +60,7 @@ import ec.org.inspi.cirev.repositories.RequerimientoRepository;
 import ec.org.inspi.cirev.repositories.TaxonomiaRepository;
 import ec.org.inspi.cirev.repositories.TecnicaRepository;
 import ec.org.inspi.cirev.repositories.TipoMuestraRepository;
+import ec.org.inspi.cirev.repositories.UserRepository;
 import ec.org.inspi.cirev.repositories.UsuarioFirmanteRepository;
 import ec.org.inspi.cirev.services.RequerimientoService;
 import net.sf.jasperreports.engine.JREmptyDataSource;
@@ -92,6 +94,8 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 	private EspecificacionRepository esRepoy;
 	@Autowired
 	private UsuarioFirmanteRepository ufRepo;
+	@Autowired
+	private UserRepository uRepo;
 	@Autowired
 	private TaxonomiaRepository taxRepo;
 	@Autowired
@@ -141,8 +145,8 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 							getName(uf.getPrefix(), uf.getName(), uf.getLastname(), uf.getSuffix()));
 				}
 				if (requerimiento.getReceptionUserId() != null) {
-					UsuarioFirmante uf = ufRepo.findById(requerimiento.getReceptionUserId()).get();
-					requeRes.setReceptionUser(getName(uf.getPrefix(), uf.getName(), uf.getLastname(), uf.getSuffix()));
+					User uf = uRepo.findById(requerimiento.getReceptionUserId());
+					requeRes.setReceptionUser(getName("", uf.getName(), uf.getLastname(), ""));
 				}
 				requeRes.setEvidence(
 						docRepo.findByRequirementIdAndDocumentTypeId(requerimiento.getId(), 1) != null ? true : false);
@@ -165,7 +169,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 		} else if (pre == null & suf != null) {
 			nombre = name + " " + lastname + " " + suf;
 		} else {
-			nombre = pre + " " + name + " " + lastname + " " + suf;
+			nombre = pre + " " + name + " " + lastname + suf;
 		}
 		return nombre;
 	}
@@ -221,7 +225,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 			requerimiento.setSpecificationId(requerimientoRequest.getSpecificationId());
 			requerimiento.setObservationRequirement(requerimientoRequest.getObservationRequirement());
 			requerimiento.setObservationEntry(requerimientoRequest.getObservationEntry());
-			requerimiento.setRequerimentUserId(requerimientoRequest.getRequerimentUserId());
+			requerimiento.setRequerimentUserId(requerimientoRequest.getRequerimentUserId());			
 			requerimiento.setReceptionUserId(requerimientoRequest.getReceptionUserId());
 			int nA = 0;
 			for (RequerimientoDetallesRequest detalleReq : requerimientoRequest.getDetails()) {
@@ -230,6 +234,7 @@ public class RequerimientoServiceImpl implements RequerimientoService {
 				}
 			}
 			requerimiento.setNumberAcceptedSamples(nA);
+			requerimiento.setNumberProcessedSamples(nA);
 			requerimiento.setNumberUnacceptedSamples(requerimiento.getNumberSamples() - nA);
 			requerimiento = requeRepo.save(requerimiento);
 

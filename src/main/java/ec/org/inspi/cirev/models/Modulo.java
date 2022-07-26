@@ -18,7 +18,7 @@ import javax.persistence.Table;
 
 @Data
 @Entity
-@Table(name = "modules")
+@Table(name = "modules", schema = "molecular")
 public class Modulo {
 	
 	@Id

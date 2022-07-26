@@ -18,7 +18,7 @@ import javax.persistence.Table;
 
 @Data
 @Entity
-@Table(name = "kits_reagents")
+@Table(name = "kits_reagents", schema = "molecular")
 public class Reactivo {
 	
 	@Id

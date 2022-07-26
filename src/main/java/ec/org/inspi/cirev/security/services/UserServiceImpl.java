@@ -37,11 +37,11 @@ public class UserServiceImpl implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		ec.org.inspi.cirev.models.User user = usersRepository.findByUsername(username).get();
-		List<UserRole> userRol = usersRolesRepository.findByRoleId(user.getId());
+		List<UserRole> userRol = usersRolesRepository.findByUserId(user.getId());
 		List<String> roles = new ArrayList<>();
 		for (UserRole userol : userRol) {
 			Role rol = rolesRepository.findById(userol.getRoleId()).get();
-			roles.add(rol.getName());
+			roles.add(rol.getCode());
 		}
 		List<GrantedAuthority> authorities = buildAuthorities(roles);
 		//System.out.println(new BCryptPasswordEncoder().encode(username));

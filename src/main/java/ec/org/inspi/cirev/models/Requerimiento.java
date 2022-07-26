@@ -18,7 +18,7 @@ import javax.persistence.Table;
 
 @Data
 @Entity
-@Table(name = "requirements")
+@Table(name = "requirements", schema = "molecular")
 public class Requerimiento {
 	
 	@Id
@@ -66,10 +66,18 @@ public class Requerimiento {
 	private Integer reportByUserId;
 	@Column(name = "requeriment_user_id")
 	private Integer requerimentUserId;
-	@Column(name = "technique_id")
-	private Integer techniqueId;
-	@Column(name = "kit_reagent_id")
-	private Integer kitReagentId;
+	@Column(name = "technique_01_id")
+	private Integer technique01Id;
+	@Column(name = "kit_reagent_01_id")
+	private Integer kitReagent01Id;
+	@Column(name = "technique_02_id")
+	private Integer technique02Id;
+	@Column(name = "kit_reagent_02_id")
+	private Integer kitReagent02Id;
+	@Column(name = "technique_03_id")
+	private Integer technique03Id;
+	@Column(name = "kit_reagent_03_id")
+	private Integer kitReagent03Id;
 	@Column(name = "reception_user_id")
 	private Integer receptionUserId;
 	@Column(name = "processing_users_id")

@@ -33,6 +33,7 @@ import ec.org.inspi.cirev.models.RequerimientoEstado;
 import ec.org.inspi.cirev.models.Taxonomia;
 import ec.org.inspi.cirev.models.Tecnica;
 import ec.org.inspi.cirev.models.TipoMuestra;
+import ec.org.inspi.cirev.models.User;
 import ec.org.inspi.cirev.models.UsuarioFirmante;
 import ec.org.inspi.cirev.payload.request.ProcesamientoDetallesRequest;
 import ec.org.inspi.cirev.payload.request.ProcesamientoRequest;
@@ -60,6 +61,7 @@ import ec.org.inspi.cirev.repositories.RequerimientoRepository;
 import ec.org.inspi.cirev.repositories.TaxonomiaRepository;
 import ec.org.inspi.cirev.repositories.TecnicaRepository;
 import ec.org.inspi.cirev.repositories.TipoMuestraRepository;
+import ec.org.inspi.cirev.repositories.UserRepository;
 import ec.org.inspi.cirev.repositories.UsuarioFirmanteRepository;
 import ec.org.inspi.cirev.services.ProcesamientosService;
 import ec.org.inspi.cirev.services.RequerimientoService;
@@ -94,6 +96,8 @@ public class ProcesamientosServiceImpl implements ProcesamientosService {
 	private EspecificacionRepository esRepoy;
 	@Autowired
 	private UsuarioFirmanteRepository ufRepo;
+	@Autowired
+	private UserRepository uRepo;
 	@Autowired
 	private TaxonomiaRepository taxRepo;
 	@Autowired
@@ -149,8 +153,8 @@ public class ProcesamientosServiceImpl implements ProcesamientosService {
 							getName(uf.getPrefix(), uf.getName(), uf.getLastname(), uf.getSuffix()));
 				}
 				if (requerimiento.getReceptionUserId() != null) {
-					UsuarioFirmante uf = ufRepo.findById(requerimiento.getReceptionUserId()).get();
-					requeRes.setReceptionUser(getName(uf.getPrefix(), uf.getName(), uf.getLastname(), uf.getSuffix()));
+					User uf = uRepo.findById(requerimiento.getReceptionUserId());
+					requeRes.setReceptionUser(getName("", uf.getName(), uf.getLastname(), ""));
 				}
 				requeRes.setEvidence(
 						docRepo.findByRequirementIdAndDocumentTypeId(requerimiento.getId(), 1) != null ? true : false);
@@ -198,29 +202,44 @@ public class ProcesamientosServiceImpl implements ProcesamientosService {
 			if (requerimientoRequest.getId() != null) {
 				requerimiento = requeRepo.findById(requerimientoRequest.getId()).get();
 				String[] usersProcess = requerimientoRequest.getProcessingUsersId().split(",");
-				requerimiento.setModifiedBy(Integer.parseInt(usersProcess[usersProcess.length - 1]));
+				requerimiento.setModifiedBy(
+						usersProcess != null ? Integer.parseInt(usersProcess[usersProcess.length - 1]) : null);
 				requerimiento.setModifiedAt(fechaActual);
 			}
-			requerimiento.setTechniqueId(requerimientoRequest.getTechniqueId());
-			requerimiento.setKitReagentId(requerimientoRequest.getKitReagentId());
+			if (requerimientoRequest.getTechnique01Id() != null)
+				requerimiento.setTechnique01Id(requerimientoRequest.getTechnique01Id());
+			if (requerimientoRequest.getKitReagent01Id() != null)
+				requerimiento.setKitReagent01Id(requerimientoRequest.getKitReagent01Id());
+			if (requerimientoRequest.getTechnique02Id() != null)
+				requerimiento.setTechnique02Id(requerimientoRequest.getTechnique02Id());
+			if (requerimientoRequest.getKitReagent02Id() != null)
+				requerimiento.setKitReagent02Id(requerimientoRequest.getKitReagent02Id());
+			if (requerimientoRequest.getTechnique03Id() != null)
+				requerimiento.setTechnique03Id(requerimientoRequest.getTechnique03Id());
+			if (requerimientoRequest.getKitReagent03Id() != null)
+				requerimiento.setKitReagent03Id(requerimientoRequest.getKitReagent03Id());
 			requerimiento = requeRepo.save(requerimiento);
 			for (ProcesamientoDetallesRequest detalleReq : requerimientoRequest.getDetails()) {
 				RequerimientoDetalle detalle = new RequerimientoDetalle();
 				if (detalleReq.getId() != null) {
 					detalle = requeDetRepo.findById(detalleReq.getId()).get();
 					String[] usersProcess = requerimientoRequest.getProcessingUsersId().split(",");
-					detalle.setModifiedBy(Integer.parseInt(usersProcess[usersProcess.length - 1]));
+					requerimiento.setModifiedBy(
+							usersProcess != null ? Integer.parseInt(usersProcess[usersProcess.length - 1]) : null);
 					detalle.setModifiedAt(fechaActual);
 				}
 				detalle.setResultProcess01(detalleReq.getProcessingResults01());
 				detalle.setObservationProcess01(detalleReq.getObservationResults01());
-				detalle.setDateProcess01(stringToCalendar(detalleReq.getDateResults01()));
+				detalle.setDateProcess01(
+						detalleReq.getDateResults01() != null ? stringToCalendar(detalleReq.getDateResults01()) : null);
 				detalle.setResultProcess02(detalleReq.getProcessingResults02());
 				detalle.setObservationProcess02(detalleReq.getObservationResults02());
-				detalle.setDateProcess02(stringToCalendar(detalleReq.getDateResults02()));
+				detalle.setDateProcess02(
+						detalleReq.getDateResults02() != null ? stringToCalendar(detalleReq.getDateResults02()) : null);
 				detalle.setResultProcess03(detalleReq.getProcessingResults03());
 				detalle.setObservationProcess03(detalleReq.getObservationResults03());
-				detalle.setDateProcess03(stringToCalendar(detalleReq.getDateResults03()));
+				detalle.setDateProcess03(
+						detalleReq.getDateResults03() != null ? stringToCalendar(detalleReq.getDateResults03()) : null);
 				requeDetRepo.save(detalle);
 			}
 		} catch (ParseException e) {
@@ -253,15 +272,35 @@ public class ProcesamientosServiceImpl implements ProcesamientosService {
 			TipoMuestra tm = tmRepo.findById(req.getTypeSampleId()).get();
 			reqResEdit.setTypeSample(tm.getName());
 			reqResEdit.setTypeSampleId(req.getTypeSampleId());
-			if (req.getTechniqueId() != null) {
-				reqResEdit.setTechniqueId(req.getTechniqueId());
-				Tecnica tec = tecRepo.findById(req.getTechniqueId()).get();
-				reqResEdit.setTechnique(tec.getName());
+			if (req.getTechnique01Id() != null) {
+				reqResEdit.setTechnique01Id(req.getTechnique01Id());
+				Tecnica tec = tecRepo.findById(req.getTechnique01Id()).get();
+				reqResEdit.setTechnique01(tec.getName());
 			}
-			if (req.getKitReagentId() != null) {
-				reqResEdit.setKitReagentId(req.getKitReagentId());
-				Reactivo reac = reacRepo.findById(req.getKitReagentId()).get();
-				reqResEdit.setKitReagent(reac.getName());
+			if (req.getKitReagent01Id() != null) {
+				reqResEdit.setKitReagent01Id(req.getKitReagent01Id());
+				Reactivo reac = reacRepo.findById(req.getKitReagent01Id()).get();
+				reqResEdit.setKitReagent01(reac.getName());
+			}
+			if (req.getTechnique02Id() != null) {
+				reqResEdit.setTechnique02Id(req.getTechnique02Id());
+				Tecnica tec = tecRepo.findById(req.getTechnique02Id()).get();
+				reqResEdit.setTechnique02(tec.getName());
+			}
+			if (req.getKitReagent02Id() != null) {
+				reqResEdit.setKitReagent02Id(req.getKitReagent02Id());
+				Reactivo reac = reacRepo.findById(req.getKitReagent02Id()).get();
+				reqResEdit.setKitReagent02(reac.getName());
+			}
+			if (req.getTechnique03Id() != null) {
+				reqResEdit.setTechnique03Id(req.getTechnique03Id());
+				Tecnica tec = tecRepo.findById(req.getTechnique03Id()).get();
+				reqResEdit.setTechnique03(tec.getName());
+			}
+			if (req.getKitReagent03Id() != null) {
+				reqResEdit.setKitReagent03Id(req.getKitReagent03Id());
+				Reactivo reac = reacRepo.findById(req.getKitReagent03Id()).get();
+				reqResEdit.setKitReagent03(reac.getName());
 			}
 			if (req.getProcessingUsersId() != null) {
 				reqResEdit.setProcessingUsersId(req.getProcessingUsersId());
@@ -280,7 +319,7 @@ public class ProcesamientosServiceImpl implements ProcesamientosService {
 			for (RequerimientoDetalle reqDet : reqDets) {
 				reqDetEdit = new ProcesamientoDetallesResponseEditar();
 				reqDetEdit.setId(reqDet.getId());
-				reqDetEdit.setPlaceCode(reqDet.getPlaceCode());
+				reqDetEdit.setCode(reqDet.getCode());
 				reqDetEdit.setCollectionDate(calendarToString(reqDet.getCollectionDate()));
 				reqDetEdit.setProcessingResults01(reqDet.getResultProcess01());
 				reqDetEdit.setProcessingResults02(reqDet.getResultProcess02());
@@ -288,9 +327,18 @@ public class ProcesamientosServiceImpl implements ProcesamientosService {
 				reqDetEdit.setObservationResults01(reqDet.getObservationProcess01());
 				reqDetEdit.setObservationResults02(reqDet.getObservationProcess02());
 				reqDetEdit.setObservationResults03(reqDet.getObservationProcess03());
-				if(reqDet.getDateProcess01() != null) reqDetEdit.setDateResults01(calendarToString(reqDet.getDateProcess01())); else  reqDetEdit.setDateResults01(null);
-				if(reqDet.getDateProcess02() != null) reqDetEdit.setDateResults02(calendarToString(reqDet.getDateProcess02())); else  reqDetEdit.setDateResults02(null);
-				if(reqDet.getDateProcess03() != null) reqDetEdit.setDateResults03(calendarToString(reqDet.getDateProcess03())); else  reqDetEdit.setDateResults03(null);
+				if (reqDet.getDateProcess01() != null)
+					reqDetEdit.setDateResults01(calendarToString(reqDet.getDateProcess01()));
+				else
+					reqDetEdit.setDateResults01(null);
+				if (reqDet.getDateProcess02() != null)
+					reqDetEdit.setDateResults02(calendarToString(reqDet.getDateProcess02()));
+				else
+					reqDetEdit.setDateResults02(null);
+				if (reqDet.getDateProcess03() != null)
+					reqDetEdit.setDateResults03(calendarToString(reqDet.getDateProcess03()));
+				else
+					reqDetEdit.setDateResults03(null);
 				reqResDetEdit.add(reqDetEdit);
 			}
 			reqResEdit.setDetails(reqResDetEdit);

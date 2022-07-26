@@ -60,7 +60,6 @@ public class AuthController {
 		//System.out.println(new BCryptPasswordEncoder().encode(loginRequest.getPassword()));
 		Modulo modulo = moduloRepository.findFirstByCodeAndActiveTrue(loginRequest.getModule());
 		ec.org.inspi.cirev.models.User user = usersRepository.findByUsername(loginRequest.getUsername()).get();
-		
 		if (userModuloRepository.existsByUserIdAndModuleIdAndActiveTrue(user.getId(), modulo.getId())) {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -68,7 +67,7 @@ public class AuthController {
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 			String jwt = jwtUtils.generateJwtToken(loginRequest.getUsername());
 
-			List<UserRole> userRol = usersRolesRepository.findByRoleId(user.getId());
+			List<UserRole> userRol = usersRolesRepository.findByUserId(user.getId());
 			List<String> roles = new ArrayList<>();
 			for (UserRole userol : userRol) {
 				Role rol = rolesRepository.findById(userol.getRoleId()).get();

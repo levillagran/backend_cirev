@@ -18,7 +18,7 @@ import javax.persistence.Table;
 
 @Data
 @Entity
-@Table(name = "roles_permissions")
+@Table(name = "roles_permissions", schema = "molecular")
 public class RolePermiso {
 	
 	@Id

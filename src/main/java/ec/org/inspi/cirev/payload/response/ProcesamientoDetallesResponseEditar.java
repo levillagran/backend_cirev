@@ -6,7 +6,7 @@ import lombok.Data;
 public class ProcesamientoDetallesResponseEditar {
 
 	private Integer id;
-	private String placeCode;
+	private String code;
 	private String collectionDate;
 	private String processingResults01;
 	private String observationResults01;
