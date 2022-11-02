@@ -52,14 +52,14 @@
 					when s.text_03 is null and s.text_02 is not null then s.text_01 || rd.number_box || s.text_02
 					when s.text_03 is not null then s.text_01 || rd.number_box || s.text_02 || rd.year_code || s.text_03
 					else '' end as almacen 
-					 from requirements_details rd
-					 join  requirements  r on r.id = rd.requirement_id 
-					 join  types_samples ts on r.type_sample_id = ts.id
-					join   areas_projects_storages aps on r.area_project_id = aps.area_project_id 
-					 join  storages s on aps.storage_id = s.id
-					 join  taxonomies t on rd.taxonomic_id = t.id
-					 join  provinces pr on rd.province_id = pr.id
-					 join  parishes p on rd.parish_id = p.id
+					 from molecular.requirements_details rd
+					 join  molecular.requirements  r on r.id = rd.requirement_id 
+					 join  molecular.types_samples ts on r.type_sample_id = ts.id
+					join   molecular.areas_projects_storages aps on r.area_project_id = aps.area_project_id 
+					 join  molecular.storages s on aps.storage_id = s.id
+					 join  molecular.taxonomies t on rd.taxonomic_id = t.id
+					 join  geography.provinces pr on rd.province_id = pr.id
+					 join  geography.parishes p on rd.parish_id = p.id
 					 WHERE r.id = $P{req}
 					 order by rd.serial asc]]>
 		</queryString>
@@ -130,12 +130,12 @@
 					r.observation_entry obsEntry, 
 					(su.name || ' ' || su.lastname) usuario,
 					(sut.name || ' ' || sut.lastname) tecnico
-					FROM requirements r
-					left join signing_users su on r.requeriment_user_id = su.id
-					left join areas_projects ap on r.area_project_id = ap.id
-					left join analysis a on r.analysis_id = a.id
-					left join specifications s on r.specification_id = s.id
-					left join users sut on r.reception_user_id = sut.id
+					FROM molecular.requirements r
+					left join molecular.signing_users su on r.requeriment_user_id = su.id
+					left join molecular.areas_projects ap on r.area_project_id = ap.id
+					left join molecular.analysis a on r.analysis_id = a.id
+					left join molecular.specifications s on r.specification_id = s.id
+					left join molecular.users sut on r.reception_user_id = sut.id
 					WHERE r.id = $P{requirementId}]]>
 	</queryString>
 	<field name="entryDate" class="java.lang.String"/>

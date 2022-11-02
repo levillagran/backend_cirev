@@ -16,7 +16,7 @@ import javax.persistence.Table;
 
 @Data
 @Entity
-@Table(name = "provinces_cantons", schema = "molecular")
+@Table(name = "provinces_cantons", schema = "geography")
 public class ProvinciaCanton {
 	
 	@Id

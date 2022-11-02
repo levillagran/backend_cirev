@@ -10,11 +10,11 @@
 					(su.prefix || ' ' || su.name || ' ' || su.lastname || ' ' || su.suffix) responsable,
 					(su.prefix || ' ' || su.name || ' ' || su.lastname || ' ' || su.suffix) as validator,
 					(su.prefix || ' ' || su.name || ' ' || su.lastname || ' ' || su.suffix) approval,
-					r.is_shipping shipping, r.observation_sequence observ
-					FROM requirements r
-					left join signing_users su on 2 = su.id
-					left join signing_users val on r.approval_user_id = val.id
-					WHERE r.id =$P{requirementId}]]>
+					r.is_shipping shipping, r.observation_shipping observ
+					FROM molecular.requirements r
+					left join molecular.signing_users su on 2 = su.id
+					left join molecular.signing_users val on r.approval_user_id = val.id
+					WHERE r.id = $P{requirementId}]]>
 	</queryString>
 	<field name="number" class="java.lang.String"/>
 	<field name="shippingDate" class="java.lang.String"/>

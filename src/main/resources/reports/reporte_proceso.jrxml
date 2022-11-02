@@ -12,10 +12,10 @@
 					(su.prefix || ' ' || su.name || ' ' || su.lastname || ' ' || su.suffix) as validator,
 					(su.prefix || ' ' || su.name || ' ' || su.lastname || ' ' || su.suffix) approval
 					FROM requirements r
-					left join signing_users su on 2 = su.id
-					left join techniques tec on r.technique_id = tec.id
-					left join kits_reagents kr on r.kit_reagent_id = kr.id
-					left join signing_users val on r.approval_user_id = val.id
+					left join molecular.signing_users su on 2 = su.id
+					left join molecular.techniques tec on r.technique_id = tec.id
+					left join molecular.kits_reagents kr on r.kit_reagent_id = kr.id
+					left join molecular.signing_users val on r.approval_user_id = val.id
 					WHERE r.id = $P{requirementId}]]>
 	</queryString>
 	<field name="number" class="java.lang.String"/>

@@ -44,7 +44,7 @@
 						when length( rd.result_process_01 ) > 0 then rd.result_process_01
 						else null
 						end as resultado
-						 from requirements_details rd
+						 from molecular.requirements_details rd
 						 WHERE rd.requirement_id = $P{req}
 						 order by rd.serial asc]]>
 		</queryString>
@@ -73,12 +73,12 @@
 					(su.prefix || ' ' || su.name || ' ' || su.lastname || ' ' || su.suffix) responsable,
 					(val.prefix || ' ' || val.name || ' ' || val.lastname || ' ' || val.suffix) as validator,
 					(apro.prefix || ' ' || apro.name || ' ' || apro.lastname || ' ' || apro.suffix) approval
-					FROM requirements r
-					left join areas_projects ap on r.area_project_id = ap.id
-					left join analysis a on r.analysis_id = a.id
-					left join signing_users su on r.requeriment_user_id = su.id
-					left join signing_users val on r.validator_user_id = val.id
-					left join signing_users apro on apro.id = 2
+					FROM molecular.requirements r
+					left join molecular.areas_projects ap on r.area_project_id = ap.id
+					left join molecular.analysis a on r.analysis_id = a.id
+					left join molecular.signing_users su on r.requeriment_user_id = su.id
+					left join molecular.signing_users val on r.validator_user_id = val.id
+					left join molecular.signing_users apro on apro.id = 2
 					WHERE r.id =  $P{requirementId}]]>
 	</queryString>
 	<field name="reportDate" class="java.lang.String"/>

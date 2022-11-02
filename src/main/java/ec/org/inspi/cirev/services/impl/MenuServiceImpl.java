@@ -38,14 +38,14 @@ public class MenuServiceImpl implements MenuService {
 		List<Menu> listMenu = new ArrayList<>();
 		Modulo modulo = moduloRepository.findFirstByCodeAndActiveTrue(menuRequest.getModule());
 		List<ModuloMenu> moduloMenus = moduloMenuRepository.findAllByModuleIdAndActiveTrue(modulo.getId());
-		
+
 		Role role = roleRepo.findFirstByCode(menuRequest.getCodeRole());
-		List<RolePermiso> rolPremisos = rolePermisoRepo.findByRoleId(role.getId());
+		List<RolePermiso> rolPermisos = rolePermisoRepo.findByRoleId(role.getId());
 		
 		for (ModuloMenu moduloMenu : moduloMenus) {
-			for (RolePermiso rolPremiso : rolPremisos) {
-				if((menuRepo.findFirstByPermissionIdAndIdAndVisibleTrue(rolPremiso.getPermissionId(), moduloMenu.getMenuId())) != null) {
-					listMenu.add(menuRepo.findFirstByPermissionIdAndIdAndVisibleTrue(rolPremiso.getPermissionId(), moduloMenu.getMenuId()));
+			for (RolePermiso rolPermiso : rolPermisos) {
+				if((menuRepo.findFirstByPermissionIdAndIdAndVisibleTrue(rolPermiso.getPermissionId(), moduloMenu.getMenuId())) != null) {
+					listMenu.add(menuRepo.findFirstByPermissionIdAndIdAndVisibleTrue(rolPermiso.getPermissionId(), moduloMenu.getMenuId()));
 				}
 			}
 		}
